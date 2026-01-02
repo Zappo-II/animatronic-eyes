@@ -13,6 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.17] - 2026-01-03
+
+### Added
+- **README badges** - Release version, license, and download count badges
+
+### Changed
+- **Yellow indicator colors** - Unlocked/warning states now use true yellow instead of brownish tint
+- **Control tab layout** - Link toggle left-aligned; buttons reordered to Impulse, Auto-I, Blink, Auto-B (right-aligned)
+- **README Quick Start** - Updated to use pre-built binaries and recovery UI for initial setup
+
+### Fixed
+- **Auto-Impulse toggle** - Now uses runtime override like Auto-Blink (doesn't persist to config)
+- **PIN timeout UI** - Connection bar color now updates immediately when timeout expires
+- **Recovery UI buttons** - Action buttons now have proper spacing when wrapping on mobile
+
+---
+
 ## [0.9.16] - 2026-01-02
 
 ### Added

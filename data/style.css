@@ -97,8 +97,8 @@ h1 {
 }
 
 .indicator.warning {
-    background: #5a4a27;
-    color: #f39c12;
+    background: #4d4d1a;
+    color: #e6e050;
     animation: pulse 1.5s infinite;
 }
 
@@ -134,8 +134,8 @@ h1 {
 }
 
 .connection-status.reconnecting {
-    background: #5a4a27;
-    color: #bfaf7f;
+    background: #4d4d1a;
+    color: #e6e050;
 }
 
 /* Admin Lock Status */
@@ -146,8 +146,8 @@ h1 {
 }
 
 .connection-status.connected.unlocked {
-    background: #5a4a27;
-    color: #bfaf7f;
+    background: #4d4d1a;
+    color: #e6e050;
     cursor: pointer;
 }
 
@@ -238,7 +238,7 @@ h1 {
 }
 
 .pin-back {
-    background: #5a4a27;
+    background: #4d4d1a;
 }
 
 .pin-actions {
@@ -335,7 +335,7 @@ h1 {
 }
 
 .pin-status.not-configured {
-    border-left: 3px solid #5a4a27;
+    border-left: 3px solid #4d4d1a;
 }
 
 .pin-form {
@@ -869,26 +869,22 @@ END LEGACY */
 .lid-link-container {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
     padding: 0.25rem 0;
-    position: relative;
-}
-
-.lid-link-container::before {
-    content: '';
-    flex: 1;
 }
 
 .lid-link-container .btn {
     min-width: 52px;  /* Match wink button width */
 }
 
+.lid-link-container .btn-push-right {
+    margin-left: auto;
+}
+
 /* Lid Link Toggle */
 .lid-link-toggle {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
     justify-content: center;

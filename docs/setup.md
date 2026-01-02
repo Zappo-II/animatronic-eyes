@@ -143,7 +143,7 @@ Or from menu: **Tools → ESP32 Sketch Data Upload**
 
 ```
 ================================
-Animatronic Eyes v0.9.16
+Animatronic Eyes v0.9.17
 ================================
 Free heap: 289324 bytes
 [Storage] Initialized

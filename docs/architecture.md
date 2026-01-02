@@ -576,13 +576,15 @@ Mode value `current` is either `"follow"` or the auto mode name (e.g., `"natural
 {"type": "getModeConfig"}
 {"type": "setModeConfig", "defaultMode": "follow", "autoBlinkEnabled": true, "blinkIntervalMin": 2000, "blinkIntervalMax": 6000}
 {"type": "listModes"}
+{"type": "setAutoBlinkOverride", "enabled": true}  // Runtime override for Control tab toggle
 ```
 
 #### Impulse System Commands
 
 ```json
 {"type": "triggerImpulse"}
-{"type": "setAutoImpulse", "enabled": true}
+{"type": "setAutoImpulse", "enabled": true}         // Persists to config
+{"type": "setAutoImpulseOverride", "enabled": true} // Runtime override for Control tab toggle
 {"type": "setImpulseInterval", "min": 15000, "max": 25000}
 {"type": "setImpulseSelection", "selection": ["startle", "distraction"]}
 {"type": "getAvailableImpulses"}
@@ -642,10 +644,10 @@ The `/api/version` endpoint returns:
 
 ```json
 {
-  "firmware": "0.9.16",
-  "minUiVersion": "0.9.16",
-  "uiVersion": "0.9.16",
-  "uiMinFirmware": "0.9.16",
+  "firmware": "0.9.17",
+  "minUiVersion": "0.9.17",
+  "uiVersion": "0.9.17",
+  "uiMinFirmware": "0.9.17",
   "uiStatus": "ok",
   "deviceId": "ABC123",
   "chipModel": "ESP32-D0WD-V3",

@@ -1,5 +1,9 @@
 # Animatronic Eyes
 
+[![Release](https://img.shields.io/github/v/release/Zappo-II/animatronic-eyes)](https://github.com/Zappo-II/animatronic-eyes/releases)
+[![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-blue)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/Zappo-II/animatronic-eyes/total)](https://github.com/Zappo-II/animatronic-eyes/releases)
+
 ESP32-based controller for 3D printed animatronic eyes with a web interface.
 
 Control realistic eye movements, eyelid animations, and gaze tracking through your browser - no app required.
@@ -30,14 +34,15 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
 
 ## Quick Start
 
-1. **Install Arduino IDE** with ESP32 board support
-2. **Install libraries**: ESPAsyncWebServer, AsyncTCP (mathieucarbou forks), ArduinoJson, ESP32Servo
-3. **Open** `animatronic-eyes.ino` and upload to ESP32
-4. **Upload web files**: Ctrl+Shift+P → "Upload LittleFS"
-5. **Connect** to WiFi network `LookIntoMyEyes-XXXXXX` (password: `12345678`)
-6. **Open** http://192.168.4.1 in your browser
+1. **Download** `animatronic-eyes.ino.bin` and `ui.bin` from [Releases](https://github.com/Zappo-II/animatronic-eyes/releases)
+2. **Flash firmware**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
+3. **Connect** to WiFi `LookIntoMyEyes-XXXXXX` (password: `12345678`)
+4. **Open** http://192.168.4.1/recovery
+5. **Upload UI** via the recovery page
 
-For detailed instructions, see the [Setup Guide](docs/setup.md).
+Subsequent updates (firmware and UI) can be uploaded via the web interface - no USB required.
+
+To build from source, see the [Setup Guide](docs/setup.md).
 
 ## Documentation
 
@@ -54,7 +59,7 @@ For detailed instructions, see the [Setup Guide](docs/setup.md).
 
 ## Current Version
 
-**v0.9.16** - Admin Lock complete. PIN protection for configuration, IP-based auth, rate limiting, recovery UI integration.
+**v0.9.17** - UI polish: yellow indicator colors, Auto-I runtime override fix, PIN timeout UI fix, layout tweaks.
 
 ## Roadmap
 

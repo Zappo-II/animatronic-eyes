@@ -113,9 +113,11 @@ a{color:#e94560}
 
 <div class="card">
 <h2>Actions</h2>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
 <button class="btn btn-secondary" onclick="location.href='/'">Go to Main UI</button>
 <button class="btn btn-secondary" onclick="downloadBackup()" id="backup-btn">Download Backup</button>
 <button class="btn btn-secondary" onclick="reboot()" id="reboot-btn">Reboot</button>
+</div>
 </div>
 
 <div class="card">
@@ -154,8 +156,10 @@ Create with: <code id="mklittlefs-cmd">mklittlefs -c data/ -p 256 -b 4096 -s ...
 <div class="card danger-zone">
 <h2>Danger Zone</h2>
 <div class="info">These actions cannot be undone.</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
 <button class="btn btn-secondary" onclick="wipeUI()" id="wipe-btn" style="background:#c0392b">Wipe UI Files</button>
-<button class="btn btn-secondary" onclick="factoryReset()" style="background:#c0392b;margin-left:10px">Factory Reset</button>
+<button class="btn btn-secondary" onclick="factoryReset()" style="background:#c0392b">Factory Reset</button>
+</div>
 </div>
 </div>
 
@@ -1974,6 +1978,17 @@ void WebServer::handleWebSocketMessage(const char* data, AsyncWebSocketClient* c
         } else {
             autoBlink.clearRuntimeOverride();
             WEB_LOG("Control", "Auto-blink: default");
+        }
+    }
+    else if (strcmp(type, "setAutoImpulseOverride") == 0) {
+        // Runtime override (for Follow mode toggle) - doesn't affect config
+        if (doc.containsKey("enabled")) {
+            bool enabled = doc["enabled"];
+            autoImpulse.setRuntimeOverride(enabled);
+            WEB_LOG("Control", "Auto-impulse: %s", enabled ? "on" : "off");
+        } else {
+            autoImpulse.clearRuntimeOverride();
+            WEB_LOG("Control", "Auto-impulse: default");
         }
     }
     else if (strcmp(type, "setBlinkInterval") == 0) {

@@ -1334,8 +1334,14 @@ function updateLockCountdown() {
             if (adminState.remainingSeconds <= 0) {
                 clearInterval(lockCountdownInterval);
                 lockCountdownInterval = null;
-                // Request fresh state from server
+                // Optimistically set locked state before server confirms
+                adminState.locked = true;
+                updateLockStatusIndicator();
+                updateTabLockIcons();
+                updateProtectedControls();
+                // Request fresh state from server to confirm
                 send({ type: 'getAdminState' });
+                return;
             }
             updateLockStatusIndicator();
         }, 1000);
@@ -2880,7 +2886,7 @@ function setupEyeController() {
         const btn = document.getElementById('autoImpulseToggle');
         const isCurrentlyActive = btn.classList.contains('active');
         // Toggle: if active, turn off; if inactive, turn on
-        send({ type: 'setAutoImpulse', enabled: !isCurrentlyActive });
+        send({ type: 'setAutoImpulseOverride', enabled: !isCurrentlyActive });
     });
 
     // Add slider tooltip behavior for Z, Lid, and Coupling sliders

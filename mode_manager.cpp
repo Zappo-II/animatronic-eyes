@@ -9,9 +9,12 @@
 #include "mode_player.h"
 #include "eye_controller.h"
 #include "auto_blink.h"
+#include "auto_impulse.h"
 #include "storage.h"
 #include "web_server.h"
 #include <LittleFS.h>
+
+extern AutoImpulse autoImpulse;
 
 ModeManager modeManager;
 
@@ -142,8 +145,9 @@ void ModeManager::exitCurrentMode() {
     // Full reset including Z and coupling when switching modes
     eyeController.resetAll();
 
-    // Clear any runtime auto-blink override when changing modes
+    // Clear any runtime overrides when changing modes
     autoBlink.clearRuntimeOverride();
+    autoImpulse.clearRuntimeOverride();
 }
 
 int ModeManager::getAvailableModeCount() {

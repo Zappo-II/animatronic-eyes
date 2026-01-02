@@ -238,7 +238,7 @@ One-shot animations that interrupt current state, then restore it. Works in both
 - [x] Preload system - Next random impulse preloaded for instant trigger
 - [x] Auto-impulse - Periodic random impulses (works in all modes like auto-blink)
 - [x] Impulse selection - Checkboxes to select subset for auto/random
-- [x] Control tab buttons - `[Auto-I] [Impulse] [Link] [Blink] [Auto-B]`
+- [x] Control tab buttons - `[Link] [Impulse] [Auto-I] [Blink] [Auto-B]`
 - [x] Precedence - Impulse waits for blink to finish, blink skipped during impulse
 - [x] Backup/restore - Impulse files included (same pattern as modes)
 - [x] OTA safety - Stops all servo activity during firmware/UI uploads
@@ -282,7 +282,7 @@ Same primitives as modes (gaze, lids, blink, wait). `restore: true` triggers sta
 ### UI - Control Tab
 
 ```
-[Auto-I] [Impulse] [Link] [Blink] [Auto-B]
+[Link] [Impulse] [Auto-I] [Blink] [Auto-B]
 ```
 
 - Impulse button triggers random from selected subset (preloaded)
