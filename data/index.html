@@ -1,0 +1,663 @@
+<!--
+  Animatronic Eyes
+  Copyright (c) 2025 Zappo-II
+  Licensed under CC BY-NC-SA 4.0
+  https://github.com/Zappo-II/animatronic-eyes
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animatronic Eyes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="header-title">
+                <h1><a href="https://github.com/Zappo-II/animatronic-eyes" target="_blank" rel="noopener" class="title-link">Animatronic Eyes</a>-<span id="deviceId" class="device-id"></span></h1>
+                <span id="aboutIcon" class="about-icon">&#9432;</span>
+            </div>
+            <div class="status-indicators">
+                <span id="apIndicator" class="indicator tooltip-trigger" data-tooltip="AP Mode">AP</span>
+                <span id="wifiIndicator" class="indicator tooltip-trigger" data-tooltip="WiFi">WiFi</span>
+                <span id="uiIndicator" class="indicator tooltip-trigger" data-tooltip="UI Status">UI</span>
+                <span id="rebootIndicator" class="indicator warning hidden tooltip-trigger" data-tooltip="Reboot Required">Reboot</span>
+            </div>
+        </div>
+        <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="control">Control</button>
+        <button class="tab" data-tab="calibration">Calibration</button>
+        <button class="tab" data-tab="configuration">Configuration</button>
+        <button class="tab" data-tab="console">Console</button>
+    </nav>
+
+    <main>
+        <!-- Control Tab -->
+        <section id="controlTab" class="tab-content active">
+            <div class="section-header">
+                <h2>Eye Control</h2>
+                <div class="mode-selector">
+                    <label for="modeSelect">Mode:</label>
+                    <select id="modeSelect" class="mode-select">
+                        <option value="follow">Follow</option>
+                        <!-- Auto modes populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Eye Preview -->
+            <div class="eye-preview">
+                <div class="eye left-eye">
+                    <div class="eyeball">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="eyelid eyelid-top"></div>
+                    <div class="eyelid eyelid-bottom"></div>
+                </div>
+                <div class="eye right-eye">
+                    <div class="eyeball">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="eyelid eyelid-top"></div>
+                    <div class="eyelid eyelid-bottom"></div>
+                </div>
+            </div>
+
+            <div class="eye-control-layout">
+                <!-- Gaze Pad (X/Y control) -->
+                <div class="gaze-section">
+                    <div class="gaze-values">
+                        <span>X: <span id="gazeXValue">0</span></span>
+                        <span>Y: <span id="gazeYValue">0</span></span>
+                    </div>
+                    <div class="gaze-pad-container">
+                        <div id="gazePad" class="gaze-pad">
+                            <div id="gazeIndicator" class="gaze-indicator"></div>
+                            <div class="gaze-crosshair horizontal"></div>
+                            <div class="gaze-crosshair vertical"></div>
+                        </div>
+                        <div class="gaze-labels">
+                            <span class="gaze-label left">L</span>
+                            <span class="gaze-label right">R</span>
+                            <span class="gaze-label top">U</span>
+                            <span class="gaze-label bottom">D</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right side: Depth, Coupling, Buttons -->
+                <div class="slider-section">
+                    <!-- Action Buttons -->
+                    <div class="control-actions">
+                        <button id="centerEyes" class="btn btn-small">Center</button>
+                    </div>
+
+                    <!-- Depth & Coupling Card -->
+                    <div class="depth-coupling-card">
+                        <!-- Z (Depth) Slider -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Close</span>
+                                <span class="slider-title">Depth: <span id="gazeZValue">100</span></span>
+                                <span>Far</span>
+                            </div>
+                            <div class="slider-with-tooltip">
+                                <div class="slider-tooltip"></div>
+                                <input type="range" id="gazeZ" min="-100" max="100" value="100">
+                            </div>
+                        </div>
+
+                        <!-- Coupling Slider -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Diverge</span>
+                                <span class="slider-title">Coupling: <span id="couplingValue">1.0</span></span>
+                                <span>Linked</span>
+                            </div>
+                            <div class="slider-with-tooltip">
+                                <div class="slider-tooltip"></div>
+                                <input type="range" id="coupling" min="-100" max="100" value="100" step="10">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lid Controls (bottom, full width) -->
+            <div class="lid-controls">
+                <!-- Header with labels and values -->
+                <div class="lid-header">
+                    <span>Closed</span>
+                    <span class="lid-values">L: <span id="lidLeftValue">100</span> · R: <span id="lidRightValue">100</span></span>
+                    <span>Open</span>
+                </div>
+
+                <!-- Left Lid Slider -->
+                <div class="lid-row">
+                    <div class="slider-with-tooltip">
+                        <div class="slider-tooltip"></div>
+                        <input type="range" id="lidLeft" min="-100" max="100" value="100">
+                    </div>
+                    <button id="blinkLeftBtn" class="btn btn-small">Wink</button>
+                </div>
+
+                <!-- Action Buttons Row: Auto-I, Impulse, Link, Blink, Auto-B -->
+                <div class="lid-link-container">
+                    <button id="autoImpulseToggle" class="btn btn-small btn-toggle" title="Toggle auto-impulse (Follow mode only)">Auto-I</button>
+                    <button id="impulseBtn" class="btn btn-small" title="Trigger random impulse">Impulse</button>
+                    <label class="lid-link-toggle" id="lidLinkLabel" title="Unlink lids">
+                        <input type="checkbox" id="lidLink" checked>
+                        <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                    </label>
+                    <button id="blinkBtn" class="btn btn-small">Blink</button>
+                    <button id="autoBlinkToggle" class="btn btn-small btn-toggle" title="Toggle auto-blink (Follow mode only)">Auto-B</button>
+                </div>
+
+                <!-- Right Lid Slider -->
+                <div class="lid-row">
+                    <div class="slider-with-tooltip">
+                        <div class="slider-tooltip"></div>
+                        <input type="range" id="lidRight" min="-100" max="100" value="100">
+                    </div>
+                    <button id="blinkRightBtn" class="btn btn-small">Wink</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calibration Tab -->
+        <section id="calibrationTab" class="tab-content">
+            <div class="section-header">
+                <h2>Servo Calibration</h2>
+                <div class="header-buttons">
+                    <button id="resetCalibration" class="btn btn-small btn-secondary">Reset</button>
+                    <button id="centerAllCalib" class="btn btn-small">Center All</button>
+                    <button id="saveCalibration" class="btn">Save All</button>
+                </div>
+            </div>
+            <p class="hint">Adjust calibration values. Changes are previewed live but not saved until you click Save All.</p>
+            <div id="calibrationCards" class="calibration-grid"></div>
+        </section>
+
+        <!-- Configuration Tab -->
+        <section id="configurationTab" class="tab-content">
+            <div class="section-header">
+                <h2>Configuration</h2>
+                <div class="header-buttons">
+                    <button id="reloadConfig" class="btn btn-small btn-secondary">Reload</button>
+                </div>
+            </div>
+
+            <!-- WiFi Status (read-only, always expanded) -->
+            <div class="config-section" data-section="wifiStatus">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">WiFi Status</span>
+                </div>
+                <div class="section-content">
+                    <div id="wifiStatus" class="status-grid">
+                        <div class="status-row">
+                            <span class="status-label">WiFi:</span>
+                            <span id="wifiStatusName" class="status-value">-</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">IP:</span>
+                            <span id="wifiStatusIp" class="status-value">-</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">AP:</span>
+                            <span id="apStatusName" class="status-value">-</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">IP:</span>
+                            <span id="apStatusIp" class="status-value">-</span>
+                        </div>
+                        <div class="status-row" id="mdnsStatusRow" hidden>
+                            <span class="status-label">mDNS:</span>
+                            <span id="mdnsStatusName" class="status-value">-</span>
+                        </div>
+                    </div>
+                    <button id="resetConnection" class="btn btn-small btn-secondary">Reset Connection</button>
+                </div>
+            </div>
+
+            <!-- WiFi Primary Network -->
+            <div class="config-section collapsed" data-section="wifiPrimary">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">WiFi Primary</span>
+                    <span id="wifiPrimaryStatus" class="section-status" hidden></span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="ssid-row">
+                        <input type="text" id="wifiPrimarySsid" class="ssid-input" placeholder="Network name">
+                        <button class="btn btn-icon scan-btn" data-slot="0" title="Scan for networks">
+                            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                        </button>
+                    </div>
+                    <div class="network-dropdown hidden" data-slot="0"></div>
+                    <div class="password-row">
+                        <input type="password" id="wifiPrimaryPassword" class="password-input" placeholder="Password">
+                        <button class="btn btn-icon toggle-password" title="Show password">
+                            <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <svg class="eye-closed hidden" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                        </button>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                        <button class="btn btn-small btn-secondary forget-btn">Forget</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WiFi Secondary Network -->
+            <div class="config-section collapsed" data-section="wifiSecondary">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">WiFi Secondary</span>
+                    <span id="wifiSecondaryStatus" class="section-status" hidden></span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="ssid-row">
+                        <input type="text" id="wifiSecondarySsid" class="ssid-input" placeholder="Network name">
+                        <button class="btn btn-icon scan-btn" data-slot="1" title="Scan for networks">
+                            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                        </button>
+                    </div>
+                    <div class="network-dropdown hidden" data-slot="1"></div>
+                    <div class="password-row">
+                        <input type="password" id="wifiSecondaryPassword" class="password-input" placeholder="Password">
+                        <button class="btn btn-icon toggle-password" title="Show password">
+                            <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <svg class="eye-closed hidden" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                        </button>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                        <button class="btn btn-small btn-secondary forget-btn">Forget</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AP Settings -->
+            <div class="config-section collapsed" data-section="ap">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">Access Point</span>
+                    <span id="apSectionStatus" class="section-status-badge">on</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <p class="hint">Configure the device's own WiFi access point. Changes require reboot.</p>
+                    <div class="form-group">
+                        <label for="apPrefix">SSID Prefix</label>
+                        <input type="text" id="apPrefix" placeholder="LookIntoMyEyes">
+                        <span class="hint" id="apNameHint">Full AP name will be shown here</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="apPassword">AP Password</label>
+                        <div class="password-row">
+                            <input type="password" id="apPassword" class="password-input" placeholder="Min 8 characters">
+                            <button class="btn btn-icon toggle-password" title="Show password">
+                                <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                <svg class="eye-closed hidden" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <label>
+                            <input type="checkbox" id="keepAP" checked>
+                            Keep AP active when connected
+                        </label>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WiFi Timing -->
+            <div class="config-section collapsed" data-section="wifiTiming">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">WiFi Timing</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-group compact">
+                            <label for="wifiGrace">Grace (s)</label>
+                            <input type="number" id="wifiGrace" min="1" max="10" value="3">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="wifiRetries">Retries</label>
+                            <input type="number" id="wifiRetries" min="1" max="10" value="3">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="wifiRetryDelay">Delay (s)</label>
+                            <input type="number" id="wifiRetryDelay" min="5" max="60" value="10">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="wifiAPScan">AP Scan (min)</label>
+                            <input type="number" id="wifiAPScan" min="1" max="30" value="5">
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- mDNS -->
+            <div class="config-section collapsed" data-section="mdns">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">Network Discovery (mDNS)</span>
+                    <span id="mdnsSectionStatus" class="section-status-badge">on</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <p class="hint">Requires reboot to apply changes.</p>
+                    <div class="toggle-row">
+                        <label>
+                            <input type="checkbox" id="mdnsEnabled" checked>
+                            Enable mDNS
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="mdnsHostname">Hostname Prefix</label>
+                        <div class="input-suffix">
+                            <input type="text" id="mdnsHostname" placeholder="animatronic-eyes">
+                            <span>.local</span>
+                        </div>
+                        <span class="hint" id="mdnsFullName">Full hostname: hostname-DEVICEID.local</span>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LED Status -->
+            <div class="config-section collapsed" data-section="led">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">Status LED</span>
+                    <span id="ledSectionStatus" class="section-status-badge">on</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="toggle-row">
+                            <label>
+                                <input type="checkbox" id="ledEnabled" checked>
+                                Enable LED
+                            </label>
+                        </div>
+                        <div class="form-group compact">
+                            <label for="ledPin">GPIO Pin</label>
+                            <input type="number" id="ledPin" min="0" max="39" value="2">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ledBrightness">Brightness: <span id="ledBrightnessValue">255</span></label>
+                        <div class="slider-container">
+                            <div class="slider-tooltip"></div>
+                            <input type="range" id="ledBrightness" min="1" max="255" value="255" class="brightness-slider">
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mode Settings -->
+            <div class="config-section collapsed" data-section="modeSettings">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">Mode Settings</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group compact">
+                            <label for="defaultModeSelect">Startup Mode</label>
+                            <select id="defaultModeSelect" class="mode-select">
+                                <option value="follow">Follow</option>
+                                <!-- Auto modes populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="toggle-row">
+                            <label>
+                                <input type="checkbox" id="rememberLastMode">
+                                Remember last active mode
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="toggle-row">
+                            <label>
+                                <input type="checkbox" id="autoBlinkEnabled" checked>
+                                Auto-Blink
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Blink Interval (ms)</label>
+                        <div class="range-row">
+                            <input type="number" id="blinkIntervalMin" min="500" max="10000" step="500" value="2000" class="small-input">
+                            <span>to</span>
+                            <input type="number" id="blinkIntervalMax" min="500" max="10000" step="500" value="6000" class="small-input">
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impulse Settings -->
+            <div class="config-section collapsed" data-section="impulseSettings">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">Impulse Settings</span>
+                    <span class="dirty-indicator" hidden></span>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="toggle-row">
+                            <label>
+                                <input type="checkbox" id="autoImpulseEnabled" checked>
+                                Auto-Impulse
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Impulse Interval (seconds)</label>
+                        <div class="range-row">
+                            <input type="number" id="impulseIntervalMin" min="10" max="300" step="10" value="30" class="small-input">
+                            <span>to</span>
+                            <input type="number" id="impulseIntervalMax" min="10" max="300" step="10" value="120" class="small-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Impulse Selection</label>
+                        <div id="impulseSelection" class="checkbox-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn btn-small save-btn" disabled>Save</button>
+                        <button class="btn btn-small btn-secondary revert-btn" disabled>Revert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System (no Save/Revert - action buttons only) -->
+            <div class="config-section collapsed" data-section="system">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">System</span>
+                </div>
+                <div class="section-content">
+                    <!-- System Info -->
+                    <div id="versionInfo" class="system-info"></div>
+
+                    <!-- System Actions -->
+                    <div class="system-actions">
+                        <a href="/recovery" class="btn btn-small btn-secondary">Recovery UI</a>
+                        <button id="wipeUI" class="btn btn-small btn-secondary btn-danger-outline">Wipe UI</button>
+                    </div>
+
+                    <!-- Admin Lock -->
+                    <div class="system-card" id="pinManagement">
+                        <h4>Admin Lock</h4>
+                        <p class="hint">Protect configuration changes with a PIN. AP-connected clients are always unlocked.</p>
+                        <div id="pinStatus" class="pin-status not-configured">
+                            PIN not configured
+                        </div>
+                        <div class="pin-form">
+                            <input type="password" id="newPinInput" class="pin-input" placeholder="4-6 digit PIN" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+                            <button id="setPinBtn" class="btn btn-small pin-btn">Set PIN</button>
+                            <button id="clearPinBtn" class="btn btn-small btn-secondary pin-btn" style="display:none">Clear PIN</button>
+                        </div>
+                    </div>
+
+                    <!-- Backup / Restore -->
+                    <div class="system-card">
+                        <h4>Backup / Restore</h4>
+                        <p class="hint">Download or restore complete device configuration including calibration, WiFi settings, and mode files.</p>
+                        <div class="backup-actions">
+                            <button id="downloadBackup" class="btn btn-small">Download Backup</button>
+                            <button id="restoreBackupBtn" class="btn btn-small btn-secondary">Restore Backup</button>
+                            <input type="file" id="restoreFile" accept=".json" hidden>
+                        </div>
+                    </div>
+
+                    <!-- Firmware Upload -->
+                    <div class="system-card">
+                        <h4>Upload Firmware (.bin)</h4>
+                        <p class="hint">Upload a new firmware binary to update the device.<br>
+                        Create with: <code>Sketch → Export Compiled Binary</code> in Arduino IDE.<br>
+                        Use the main .bin file (not bootloader/partitions), e.g. <code>animatronic-eyes.ino.bin</code></p>
+                        <div class="form-group">
+                            <input type="file" id="firmwareFile" accept=".bin">
+                        </div>
+                        <button id="uploadFirmware" class="btn btn-small">Upload Firmware</button>
+                    </div>
+
+                    <!-- UI Upload -->
+                    <div class="system-card">
+                        <h4>Upload UI Files (.bin)</h4>
+                        <p class="hint">Upload a LittleFS image containing UI files.<br>
+                        Create with: <code>mklittlefs -c data/ -p 256 -b 4096 -s 0x160000 ui.bin</code></p>
+                        <div class="form-group">
+                            <input type="file" id="uiFile" accept=".bin">
+                        </div>
+                        <button id="uploadUI" class="btn btn-small">Upload UI</button>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div id="uploadProgress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">0%</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- About -->
+            <div class="config-section collapsed" data-section="about">
+                <div class="section-header">
+                    <span class="collapse-icon">&#9660;</span>
+                    <span class="section-title">About</span>
+                </div>
+                <div class="section-content">
+                    <div class="about-content">
+                        <h3 class="about-title">Animatronic Eyes</h3>
+                        <p class="about-version" id="aboutVersions">Firmware / UI</p>
+                        <p class="about-version">&copy; 2025 Zappo-II</p>
+                        <p class="about-device" id="aboutDevice">Running on device</p>
+
+                        <p class="about-text">
+                            This project uses the mechanical design created by <a href="https://makerworld.com/en/@manlymorgan" target="_blank" rel="noopener">Morgan Manly</a>.
+                            The software side of things — this firmware and web interface — was developed independently by
+                            <a href="https://github.com/Zappo-II" target="_blank" rel="noopener">Zappo-II</a> without using any existing code.
+                        </p>
+
+                        <p class="about-text">
+                            Feel free to learn from it, tinker with it, and use it for your own private projects, studies, or research.
+                            That's what open source is about.
+                            However, commercial use of this software — in whole or in part — is strictly prohibited without explicit permission.
+                        </p>
+
+                        <p class="about-text">
+                            Head over to <a href="https://github.com/Zappo-II/animatronic-eyes" target="_blank" rel="noopener">GitHub</a> for the code, docs, and if something's broken — open an issue.
+                        </p>
+
+                        <p class="about-text">
+                            Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> — see the <a href="https://github.com/Zappo-II/animatronic-eyes/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a> file in the repository for details.
+                        </p>
+
+                        <div class="about-warning">
+                            <span class="warning-icon">&#9888;</span>
+                            <span class="warning-text">Commercial use without permission will be met with legal action.</span>
+                            <span class="warning-icon">&#9888;</span>
+                        </div>
+
+                        <div class="about-credits">
+                            <p><strong>Device hardware designed by Morgan Manly:</strong></p>
+                            <ul>
+                                <li><a href="https://github.com/ManlyMorgan" target="_blank" rel="noopener">GitHub</a></li>
+                                <li><a href="https://www.instructables.com/member/MorganManly/" target="_blank" rel="noopener">Instructables</a></li>
+                                <li><a href="https://makerworld.com/en/@manlymorgan" target="_blank" rel="noopener">Makerworld</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Footer (global, outside sections) -->
+            <div class="config-footer">
+                <div class="footer-actions">
+                    <button id="reboot" class="btn btn-secondary">Reboot</button>
+                    <button id="factoryReset" class="btn btn-danger">Factory Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Console Tab -->
+        <section id="consoleTab" class="tab-content">
+            <div class="section-header">
+                <h2>Console</h2>
+                <div class="header-buttons">
+                    <label class="console-checkbox">
+                        <input type="checkbox" id="consoleAutoscroll" checked>
+                        Auto-scroll
+                    </label>
+                    <button id="consoleClear" class="btn btn-small btn-secondary">Clear</button>
+                </div>
+            </div>
+            <div id="consoleOutput" class="console-output"></div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

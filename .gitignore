@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+*.elf
+*.bin
+**/ui.bin
+
+# IDE and editor
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Hidden directories (except .github)
+.*/
+!.github/
+

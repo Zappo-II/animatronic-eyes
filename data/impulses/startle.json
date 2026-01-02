@@ -1,0 +1,10 @@
+{
+  "name": "Startle",
+  "description": "Wide eyes + random jerk movement",
+  "restore": true,
+  "sequence": [
+    {"lids": {"left": 100, "right": 100}},
+    {"gaze": {"x": {"random": [-30, 30]}, "y": {"random": [10, 30]}}},
+    {"wait": 200}
+  ]
+}

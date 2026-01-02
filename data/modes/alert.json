@@ -1,0 +1,16 @@
+{
+  "name": "Alert",
+  "description": "Wide eyes, quick darting movements",
+  "loop": true,
+  "sequence": [
+    {"lids": {"left": 80, "right": 80}},
+    {"gaze": {"x": {"random": [-60, 60]}, "y": {"random": [-20, 20]}}},
+    {"wait": {"random": [300, 800]}},
+    {"gaze": {"x": {"random": [-60, 60]}, "y": {"random": [-20, 20]}}},
+    {"wait": {"random": [200, 600]}},
+    {"gaze": {"x": 0, "y": 0}},
+    {"wait": {"random": [500, 1000]}},
+    {"blink": 80},
+    {"wait": {"random": [1000, 2000]}}
+  ]
+}

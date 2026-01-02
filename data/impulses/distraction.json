@@ -1,0 +1,9 @@
+{
+  "name": "Distraction",
+  "description": "Quick random side glance",
+  "restore": true,
+  "sequence": [
+    {"gaze": {"x": {"random": [-80, 80]}, "y": {"random": [-20, 20]}}},
+    {"wait": {"random": [150, 300]}}
+  ]
+}

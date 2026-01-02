@@ -1,0 +1,15 @@
+{
+  "name": "Natural",
+  "description": "Random looking around with occasional blinks",
+  "loop": true,
+  "sequence": [
+    {"gaze": {"x": 0, "y": 0, "z": 50}},
+    {"wait": {"random": [2000, 4000]}},
+    {"gaze": {"x": {"random": [-40, 40]}, "y": {"random": [-30, 30]}}},
+    {"wait": {"random": [1500, 3000]}},
+    {"gaze": {"x": {"random": [-40, 40]}, "y": {"random": [-30, 30]}}},
+    {"wait": {"random": [2000, 5000]}},
+    {"blink": 150},
+    {"wait": {"random": [3000, 6000]}}
+  ]
+}

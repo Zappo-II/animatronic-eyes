@@ -1,0 +1,20 @@
+{
+  "name": "Spy",
+  "description": "Narrowed lids, suspicious shifting",
+  "loop": true,
+  "sequence": [
+    {"lids": {"left": -20, "right": -20}},
+    {"gaze": {"x": -60, "y": 0}},
+    {"wait": {"random": [1000, 2000]}},
+    {"gaze": {"x": 60, "y": 0}},
+    {"wait": {"random": [1000, 2000]}},
+    {"gaze": {"x": 0, "y": 0}},
+    {"lids": {"left": 0, "right": 0}},
+    {"wait": {"random": [2000, 4000]}},
+    {"lids": {"left": -20, "right": -20}},
+    {"gaze": {"x": {"random": [-70, 70]}, "y": {"random": [-10, 10]}}},
+    {"wait": {"random": [800, 1500]}},
+    {"blink": 150},
+    {"wait": {"random": [3000, 5000]}}
+  ]
+}

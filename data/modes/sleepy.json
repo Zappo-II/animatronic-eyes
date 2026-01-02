@@ -1,0 +1,18 @@
+{
+  "name": "Sleepy",
+  "description": "Slow movements, heavy lids, long blinks",
+  "loop": true,
+  "sequence": [
+    {"lids": {"left": -30, "right": -30}},
+    {"gaze": {"x": 0, "y": -20, "z": 50}},
+    {"wait": {"random": [3000, 5000]}},
+    {"gaze": {"x": {"random": [-20, 20]}, "y": {"random": [-30, -10]}}},
+    {"wait": {"random": [4000, 6000]}},
+    {"blink": 400},
+    {"wait": {"random": [2000, 4000]}},
+    {"lids": {"left": -50, "right": -50}},
+    {"wait": {"random": [3000, 5000]}},
+    {"lids": {"left": -30, "right": -30}},
+    {"wait": {"random": [4000, 7000]}}
+  ]
+}
