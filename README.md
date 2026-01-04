@@ -37,7 +37,11 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
 ## Quick Start
 
 1. **Download** `animatronic-eyes.ino.bin` and `ui.bin` from [Releases](https://github.com/Zappo-II/animatronic-eyes/releases)
-2. **Flash firmware via USB**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
+2. **Flash firmware via USB** using one of these options:
+   - **Web Flasher** (easiest): Use [ESP Web Tools](https://web.esphome.io/) or [Espressif Launchpad](https://espressif.github.io/esp-launchpad/) - no install required
+   - **Arduino IDE**: Open any sketch, select your board/port, then Sketch → Upload Compiled Binary
+   - **Command line**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
+     - Find esptool: `pip install esptool` or check `~/.arduino15/packages/esp32/tools/esptool_py/*/`
 3. **Connect** to WiFi `LookIntoMyEyes-XXXXXX` (password: `12345678`)
 4. **Open** http://192.168.4.1
 5. **Upload UI** via the recovery page

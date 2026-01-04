@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **README Quick Start** - Added multiple flash options (web flasher, Arduino IDE, command line with esptool hints)
+
 ---
 
 ## [1.0.0] - 2026-01-04
@@ -28,10 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Vergence intensity** - Reduced max vergence from 100 to 50 for less aggressive eye convergence
 
 ### Fixed
+- **Impulse log order** - "Impulse triggered" now logged before "pending/playing" (was reversed)
 - **Invert checkbox safety** - Toggling invert now immediately moves servo to center position instead of mirroring current position, preventing potential mechanical damage when servo is near an extreme
 - **Invert immediate feedback** - Invert checkbox change is now sent to device immediately, so user can see the effect on test slider right away
 - **Blink not closing from wide open** - Blink duration now scales based on lid travel distance; lids at +100 get ~250ms, neutral gets ~175ms. Use `{"blink": 0}` in modes/impulses for auto-scaling, or specify explicit duration
 - **Connection status stuck on "Connected"** - Web UI now detects dead connections via heartbeat; shows "Disconnected" within 3 seconds if device is powered off
+
+### Documentation
+- **Calibration guide** - Reordered steps: safe test range → direction → min → max → center (safer procedure)
+- Custom modes and impulses highlighted in README feature list with doc links
+- Added "Custom Modes" and "Custom Impulses" sections to usage.md with JSON format and examples
 
 ### Technical
 - New `UpdateChecker` singleton class (`update_checker.h/.cpp`)
