@@ -8,6 +8,8 @@
 // WebSocket connection
 let ws = null;
 let reconnectInterval = null;
+let lastMessageTime = 0;
+let heartbeatInterval = null;
 
 // Runtime state (from continuous broadcast)
 let state = {
@@ -124,6 +126,7 @@ const apIndicatorEl = document.getElementById('apIndicator');
 const wifiIndicatorEl = document.getElementById('wifiIndicator');
 const uiIndicatorEl = document.getElementById('uiIndicator');
 const rebootIndicatorEl = document.getElementById('rebootIndicator');
+const updateIndicatorEl = document.getElementById('updateIndicator');
 const deviceIdEl = document.getElementById('deviceId');
 // const servoControlsEl = document.getElementById('servoControls');  // LEGACY: removed in v0.5
 const calibrationCardsEl = document.getElementById('calibrationCards');
@@ -317,6 +320,7 @@ function connectWebSocket() {
     };
 
     ws.onmessage = (event) => {
+        lastMessageTime = Date.now();  // Track for heartbeat detection
         try {
             const data = JSON.parse(event.data);
             handleMessage(data);
@@ -324,6 +328,17 @@ function connectWebSocket() {
             console.error('Failed to parse message:', e);
         }
     };
+
+    // Start heartbeat check - detect dead connection if no messages for 3 seconds
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN && lastMessageTime > 0) {
+            if (Date.now() - lastMessageTime > 3000) {
+                console.log('No heartbeat - connection lost');
+                ws.close();  // Triggers onclose → shows Disconnected → starts reconnect
+            }
+        }
+    }, 1000);
 }
 
 function handleMessage(data) {
@@ -335,6 +350,10 @@ function handleMessage(data) {
         state.eye = data.eye || {};
         state.mode = data.mode || {};
         state.impulse = data.impulse || {};
+        state.update = data.update || {};
+
+        // Update the Update Check UI
+        updateUpdateCheckUI();
 
         // Initialize local calibration from server state on first load
         if (localCalibration.length === 0 && state.servos && state.servos.length > 0) {
@@ -544,6 +563,36 @@ function updateApSectionBadge() {
     if (badge) {
         badge.textContent = enabled ? 'on' : 'off';
         badge.classList.toggle('off', !enabled);
+    }
+}
+
+function updateUpdateCheckUI() {
+    const updateStatus = document.getElementById('updateStatus');
+    const enabledCheckbox = document.getElementById('updateCheckEnabled');
+    const intervalSelect = document.getElementById('updateCheckInterval');
+
+    if (!state.update) return;
+
+    // Update checkbox and select to match state
+    if (enabledCheckbox) enabledCheckbox.checked = state.update.enabled !== false;
+    if (intervalSelect) intervalSelect.value = state.update.interval ?? 1;
+
+    // Update status display
+    if (updateStatus) {
+        updateStatus.classList.remove('update-available', 'up-to-date', 'checking');
+
+        if (state.update.checking) {
+            updateStatus.classList.add('checking');
+            updateStatus.innerHTML = 'Checking for updates...';
+        } else if (state.update.available && state.update.version) {
+            updateStatus.classList.add('update-available');
+            updateStatus.innerHTML = `Update available: <a href="https://github.com/Zappo-II/animatronic-eyes/releases" target="_blank">v${state.update.version}</a>`;
+        } else if (state.update.lastCheck > 0) {
+            updateStatus.classList.add('up-to-date');
+            updateStatus.innerHTML = 'Firmware is up to date';
+        } else {
+            updateStatus.innerHTML = 'Not checked yet';
+        }
     }
 }
 
@@ -1286,8 +1335,8 @@ function updateProtectedControls() {
     const isLocked = adminState.pinConfigured && adminState.locked;
     const isRateLimited = adminState.lockoutSeconds > 0;
 
-    // All inputs in configuration tab (except PIN management and reboot which have their own logic)
-    const configInputs = document.querySelectorAll('#configurationTab input:not(.pin-input), #configurationTab select, #configurationTab button:not(.pin-btn):not(#reboot)');
+    // All inputs in configuration tab (except PIN management, reboot, and checkUpdateBtn which are always allowed)
+    const configInputs = document.querySelectorAll('#configurationTab input:not(.pin-input), #configurationTab select, #configurationTab button:not(.pin-btn):not(#reboot):not(#checkUpdateBtn)');
     configInputs.forEach(input => {
         input.disabled = isLocked;
     });
@@ -1626,6 +1675,14 @@ function updateIndicators() {
     } else {
         rebootIndicatorEl.classList.add('hidden');
     }
+
+    // Update indicator with tooltip
+    if (state.update && state.update.available && state.update.version) {
+        updateIndicatorEl.classList.remove('hidden');
+        updateIndicatorEl.title = `Update available: v${state.update.version}`;
+    } else {
+        updateIndicatorEl.classList.add('hidden');
+    }
 }
 
 /* LEGACY: Servo Controls removed in v0.5 Eye Controller UI
@@ -1884,9 +1941,11 @@ function createCalibrationCard(servo, index) {
         localCalibration[index].pin = parseInt(e.target.value) || 0;
     });
 
-    // Invert change
+    // Invert change - send immediately for safety (servo moves to center)
     div.querySelector('.invert-toggle input').addEventListener('change', (e) => {
-        localCalibration[index].invert = e.target.checked;
+        const newInvert = e.target.checked;
+        localCalibration[index].invert = newInvert;
+        send({ type: 'setInvert', index: index, invert: newInvert });
     });
 
     // Min/max buttons
@@ -2259,6 +2318,27 @@ function setupEventListeners() {
     // Admin PIN buttons
     document.getElementById('setPinBtn')?.addEventListener('click', setAdminPin);
     document.getElementById('clearPinBtn')?.addEventListener('click', clearAdminPin);
+
+    // Update indicator click - opens GitHub releases
+    updateIndicatorEl?.addEventListener('click', () => {
+        window.open('https://github.com/Zappo-II/animatronic-eyes/releases', '_blank');
+    });
+
+    // Update check button
+    document.getElementById('checkUpdateBtn')?.addEventListener('click', () => {
+        send({ type: 'checkForUpdate' });
+        showToast('Checking for updates...', 'info');
+    });
+
+    // Update check enabled toggle
+    document.getElementById('updateCheckEnabled')?.addEventListener('change', (e) => {
+        send({ type: 'setUpdateCheckEnabled', enabled: e.target.checked });
+    });
+
+    // Update check interval select
+    document.getElementById('updateCheckInterval')?.addEventListener('change', (e) => {
+        send({ type: 'setUpdateCheckInterval', interval: parseInt(e.target.value) });
+    });
 
     // Reset connection with loading state
     document.getElementById('resetConnection').addEventListener('click', (e) => {

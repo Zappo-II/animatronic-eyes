@@ -24,6 +24,7 @@
                 <span id="wifiIndicator" class="indicator tooltip-trigger" data-tooltip="WiFi">WiFi</span>
                 <span id="uiIndicator" class="indicator tooltip-trigger" data-tooltip="UI Status">UI</span>
                 <span id="rebootIndicator" class="indicator warning hidden tooltip-trigger" data-tooltip="Reboot Required">Reboot</span>
+                <span id="updateIndicator" class="indicator update-available hidden tooltip-trigger" data-tooltip="Update Available">&#x2B06;</span>
             </div>
         </div>
         <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
@@ -534,6 +535,34 @@
                             <input type="password" id="newPinInput" class="pin-input" placeholder="4-6 digit PIN" maxlength="6" inputmode="numeric" pattern="[0-9]*">
                             <button id="setPinBtn" class="btn btn-small pin-btn">Set PIN</button>
                             <button id="clearPinBtn" class="btn btn-small btn-secondary pin-btn" style="display:none">Clear PIN</button>
+                        </div>
+                    </div>
+
+                    <!-- Update Check -->
+                    <div class="system-card" id="updateCheckCard">
+                        <h4>Update Check</h4>
+                        <p class="hint">Check GitHub for newer firmware versions.</p>
+                        <div id="updateStatus" class="update-status">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="form-row">
+                            <div class="toggle-row">
+                                <label>
+                                    <input type="checkbox" id="updateCheckEnabled" checked>
+                                    Check for updates
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateCheckInterval">Frequency</label>
+                            <select id="updateCheckInterval" class="small-select">
+                                <option value="0">On startup only</option>
+                                <option value="1">Daily</option>
+                                <option value="2">Weekly</option>
+                            </select>
+                        </div>
+                        <div class="update-actions">
+                            <button id="checkUpdateBtn" class="btn btn-small">Check Now</button>
                         </div>
                     </div>
 

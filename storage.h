@@ -68,6 +68,17 @@ struct ImpulseConfig {
     char impulseSelection[IMPULSE_SELECTION_STRLEN];  // Comma-separated list of selected impulse names
 };
 
+struct UpdateCheckConfig {
+    bool enabled;           // Master enable/disable for update checking
+    uint8_t interval;       // 0=boot only, 1=daily, 2=weekly
+};
+
+struct UpdateCheckCache {
+    uint32_t lastCheckTime;        // millis() when last check was performed
+    char availableVersion[16];     // Version found on GitHub (empty if up-to-date)
+    bool updateAvailable;          // True if newer version found
+};
+
 class Storage {
 public:
     void begin();
@@ -115,6 +126,13 @@ public:
     // Impulse System
     ImpulseConfig getImpulseConfig();
     void setImpulseConfig(const ImpulseConfig& config);
+
+    // Update Check
+    UpdateCheckConfig getUpdateCheckConfig();
+    void setUpdateCheckConfig(const UpdateCheckConfig& config);
+    UpdateCheckCache getUpdateCheckCache();
+    void setUpdateCheckCache(const UpdateCheckCache& cache);
+    void clearUpdateCheckCache();
 
     // Admin PIN (4-6 digits, stored plain text)
     bool hasAdminPin();

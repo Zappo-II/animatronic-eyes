@@ -349,6 +349,50 @@ mklittlefs -c data/ -p 256 -b 4096 -s 0x160000 ui.bin
 
 ---
 
+## Update Check Problems
+
+### Update indicator not appearing
+
+**Symptoms**: No ⬆️ indicator even though newer version exists
+
+**Solutions**:
+1. Check that update checking is enabled in Configuration → Update Check
+2. Click "Check Now" to trigger manual check
+3. Ensure device is connected to WiFi (not AP-only mode)
+4. Check Console tab for `[Update]` error messages
+5. Wait for next scheduled check (boot + interval)
+
+### Check Now button does nothing
+
+**Symptoms**: Clicking Check Now shows no result
+
+**Solutions**:
+1. Ensure WiFi is connected (update check requires internet)
+2. Check Console tab for connection errors
+3. GitHub may be temporarily unreachable - try again later
+
+### Update shown but I'm already on latest
+
+**Symptoms**: Indicator shows update available for version you already have
+
+**Solutions**:
+1. The cache should auto-clear when firmware matches - try rebooting
+2. If persists, the `version.json` on GitHub may have stale data
+3. Check your actual firmware version in Configuration → About
+
+### Can't change update check settings
+
+**Symptoms**: Checkbox and dropdown are disabled
+
+**Cause**: Admin Lock is enabled and you're not unlocked
+
+**Solutions**:
+1. Click the connection status bar to enter your PIN
+2. Or connect via device AP (always unlocked)
+3. Note: "Check Now" button is always allowed, only settings are protected
+
+---
+
 ## Recovery Procedures
 
 ### Backup Configuration First

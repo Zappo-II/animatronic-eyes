@@ -124,7 +124,7 @@ How the UI stays synchronized:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ 1. web_server.cpp: loop() checks if 75ms elapsed since last broadcast   │
+│ 1. web_server.cpp: loop() checks if 100ms elapsed since last broadcast  │
 └─────────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -160,6 +160,7 @@ How the UI stays synchronized:
 │    - autoBlink.begin() → Starts auto-blink timer                        │
 │    - impulsePlayer.begin() → Loads impulse files, preloads first        │
 │    - autoImpulse.begin() → Starts auto-impulse timer                    │
+│    - updateChecker.begin() → Loads config, schedules first check        │
 └─────────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -172,7 +173,8 @@ How the UI stays synchronized:
 │    - autoBlink.loop() → Triggers blink if interval elapsed              │
 │    - impulsePlayer.loop() → Advances impulse playback state machine     │
 │    - autoImpulse.loop() → Triggers impulse if interval elapsed          │
-│    - webServer.loop() → Broadcasts state every 75ms                     │
+│    - updateChecker.loop() → Checks for updates if interval elapsed      │
+│    - webServer.loop() → Broadcasts state every 100ms                    │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -274,6 +276,7 @@ animatronic-eyes/
 ├── auto_blink.h/.cpp      # Automatic blink timer
 ├── impulse_player.h/.cpp  # Impulse playback with state save/restore
 ├── auto_impulse.h/.cpp    # Automatic impulse timer
+├── update_checker.h/.cpp  # GitHub version checking
 ├── led_status.h/.cpp      # Status LED patterns, PWM
 ├── web_server.h/.cpp      # HTTP, WebSocket, OTA, recovery UI
 ├── data/                  # LittleFS web assets
@@ -310,8 +313,9 @@ Central configuration file containing:
 - Default GPIO pins
 - Default calibration values
 - `SERVO_UPDATE_INTERVAL_MS` - Throttle rate (20ms)
-- WebSocket broadcast interval (75ms)
+- WebSocket broadcast interval (100ms)
 - Admin lock timeouts (unlock 15min, lockout 5min)
+- Update check settings (boot delay, jitter, intervals, GitHub URLs)
 - NVS namespace
 
 ### storage.h/.cpp
@@ -434,6 +438,20 @@ Automatic impulse timer:
 - `getSelectedCount()` - Returns number of selected impulses
 - Configurable via ImpulseConfig in Storage
 
+### update_checker.h/.cpp
+
+GitHub version checking:
+- `UpdateChecker` singleton class
+- Fetches `version.json` from GitHub raw CDN
+- Compares remote version with `FIRMWARE_VERSION`
+- Configurable check frequency (boot only, daily, weekly)
+- 30s boot delay + random jitter (0-30 min) to prevent thundering herd
+- Results cached in NVS (survives reboot)
+- Cache auto-clears when firmware matches/exceeds cached version
+- `checkNow()` - Manual trigger (always allowed)
+- `isUpdateAvailable()` / `getAvailableVersion()` - State getters
+- Only checks when WiFi STA connected (skipped in AP-only mode)
+
 ### web_server.h/.cpp
 
 HTTP and WebSocket server:
@@ -468,7 +486,7 @@ When a client connects, the server sends available modes and impulses once:
 
 These lists don't change at runtime, so sending them once reduces broadcast payload.
 
-### State Broadcast (Server → Client, every 75ms)
+### State Broadcast (Server → Client, every 100ms)
 
 ```json
 {
@@ -512,6 +530,14 @@ These lists don't change at runtime, so sending them once reduces broadcast payl
     "autoImpulse": true,
     "autoImpulseActive": true,
     "selection": "startle,distraction"
+  },
+  "update": {
+    "available": false,
+    "version": "",
+    "lastCheck": 0,
+    "checking": false,
+    "enabled": true,
+    "interval": 1
   }
 }
 ```
@@ -528,12 +554,15 @@ Mode value `current` is either `"follow"` or the auto mode name (e.g., `"natural
 {"type": "setGaze", "x": 50, "y": -30, "z": 0}
 {"type": "setLids", "left": 100, "right": 100}
 {"type": "blink"}
+{"type": "blink", "duration": 200}
 {"type": "blinkLeft"}
 {"type": "blinkRight"}
 {"type": "setCoupling", "value": 1.0}
 {"type": "centerEyes"}
 {"type": "reapplyEyeState"}
 ```
+
+Blink commands accept optional `duration` in milliseconds. If omitted (or 0), duration auto-scales based on lid position.
 
 #### Servo Commands (Calibration)
 
@@ -591,6 +620,19 @@ Mode value `current` is either `"follow"` or the auto mode name (e.g., `"natural
 {"type": "getImpulseConfig"}
 {"type": "setImpulseConfig", "autoImpulse": true, "intervalMin": 15000, "intervalMax": 25000, "selection": ["startle"]}
 ```
+
+#### Update Check Commands
+
+```json
+{"type": "checkForUpdate"}
+{"type": "setUpdateCheckEnabled", "enabled": true}
+{"type": "setUpdateCheckInterval", "interval": 1}
+```
+
+- `checkForUpdate` - Always allowed (read-only)
+- `setUpdateCheckEnabled` - Protected (requires admin unlock)
+- `setUpdateCheckInterval` - Protected (requires admin unlock)
+- Interval values: 0 = boot only, 1 = daily, 2 = weekly
 
 #### Admin Lock Commands
 
@@ -709,6 +751,7 @@ The `/api/version` endpoint returns:
 
 | Version | Feature | Details |
 |---------|---------|---------|
+| v1.0 | Update Check | GitHub version checking, configurable schedule |
 | v0.9 | Admin Lock | PIN protection, IP-based auth, rate limiting |
 | v0.8 | Impulses | One-shot animations with state save/restore |
 | v0.7 | Mode System | JSON-based autonomous behaviors, auto-blink |

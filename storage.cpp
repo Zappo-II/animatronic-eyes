@@ -327,6 +327,42 @@ void Storage::setImpulseConfig(const ImpulseConfig& config) {
     prefs.putString("imp_select", config.impulseSelection);
 }
 
+// Update Check config
+UpdateCheckConfig Storage::getUpdateCheckConfig() {
+    UpdateCheckConfig config;
+    config.enabled = prefs.getBool("upd_enabled", DEFAULT_UPDATE_CHECK_ENABLED);
+    config.interval = prefs.getUChar("upd_interval", DEFAULT_UPDATE_CHECK_INTERVAL);
+    return config;
+}
+
+void Storage::setUpdateCheckConfig(const UpdateCheckConfig& config) {
+    prefs.putBool("upd_enabled", config.enabled);
+    prefs.putUChar("upd_interval", config.interval);
+}
+
+// Update Check cache (in-memory values persisted to NVS)
+UpdateCheckCache Storage::getUpdateCheckCache() {
+    UpdateCheckCache cache;
+    cache.lastCheckTime = prefs.getULong("upd_lastchk", 0);
+    cache.updateAvailable = prefs.getBool("upd_avail", false);
+    String version = prefs.getString("upd_version", "");
+    strncpy(cache.availableVersion, version.c_str(), sizeof(cache.availableVersion) - 1);
+    cache.availableVersion[sizeof(cache.availableVersion) - 1] = '\0';
+    return cache;
+}
+
+void Storage::setUpdateCheckCache(const UpdateCheckCache& cache) {
+    prefs.putULong("upd_lastchk", cache.lastCheckTime);
+    prefs.putBool("upd_avail", cache.updateAvailable);
+    prefs.putString("upd_version", cache.availableVersion);
+}
+
+void Storage::clearUpdateCheckCache() {
+    prefs.remove("upd_lastchk");
+    prefs.remove("upd_avail");
+    prefs.remove("upd_version");
+}
+
 // Admin PIN
 bool Storage::hasAdminPin() {
     return prefs.isKey("admin_pin") && prefs.getString("admin_pin", "").length() > 0;

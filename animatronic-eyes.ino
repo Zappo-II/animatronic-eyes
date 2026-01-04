@@ -28,6 +28,7 @@
 #include "mode_player.h"
 #include "impulse_player.h"
 #include "auto_impulse.h"
+#include "update_checker.h"
 #include "web_server.h"
 
 void setup() {
@@ -67,6 +68,9 @@ void setup() {
 
     webServer.begin();
 
+    // Update checker - must init after WiFi and storage
+    updateChecker.begin();
+
     Serial.println();
     Serial.println("Setup complete!");
     Serial.printf("Free heap after init: %d bytes\n", ESP.getFreeHeap());
@@ -85,5 +89,6 @@ void loop() {
     modePlayer.loop();
     impulsePlayer.loop();
     autoImpulse.loop();
+    updateChecker.loop();
     webServer.loop();
 }

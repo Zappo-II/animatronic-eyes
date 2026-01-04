@@ -34,42 +34,56 @@ Calibration maps the software's -100 to +100 range to your specific servo's phys
 
 ### Step-by-Step
 
-#### 1. Find Minimum Position
+For each servo, follow these steps in order:
 
-For each servo:
+#### 1. Set Safe Test Range
 
-1. Use the **Test Slider** to move the servo toward lower values
+Before exploring full range, create a small safe zone to test direction:
+
+1. Set **Min** to 85° (5° below default center)
+2. Set **Max** to 95° (5° above default center)
+3. Click **Save**
+
+This gives you a safe 10° range to verify movement direction without risking mechanical damage.
+
+#### 2. Check Direction
+
+1. Move the **Test Slider** from center toward Max
+2. Observe which direction the servo moves
+3. If the movement is opposite to expected, toggle **Invert** on
+
+For example, if increasing gaze X should move the eye right but it moves left, enable invert.
+
+**Note**: Toggling invert takes effect immediately (no Save required) and moves the servo to center for safety.
+
+#### 3. Find Minimum Position
+
+1. Slowly decrease the **Min** value and use the Test Slider to test
 2. Watch the mechanical movement carefully
 3. Stop when you reach the physical limit (don't force it!)
-4. Set **Min** to this value (or slightly inside the limit for safety)
+4. Set **Min** slightly inside the limit for safety margin
 5. Click **Save**
 
 **Warning**: Going beyond physical limits can strip servo gears or damage linkages.
 
-#### 2. Find Maximum Position
+#### 4. Find Maximum Position
 
-1. Move the Test Slider toward higher values
+1. Slowly increase the **Max** value and use the Test Slider to test
 2. Stop at the physical limit
-3. Set **Max** to this value
+3. Set **Max** slightly inside the limit for safety margin
 4. Click **Save**
 
-#### 3. Find Center Position
+#### 5. Find Center Position
 
-1. Move the Test Slider to find the neutral position
+Now that you know the full range:
+
+1. Use the **Test Slider** to find the neutral position
 2. For eye X/Y servos: pupil should look straight ahead
 3. For eyelids: relaxed, neutral open position (not wide open)
-4. Adjust the **Center** value to match
+4. Set **Center** to this value
 5. Click **Save**
 
-#### 4. Check Direction
-
-If the servo moves opposite to expected:
-1. Toggle **Invert** on
-2. Click **Save**
-
-For example, if increasing gaze X should move the eye right but it moves left, enable invert.
-
-#### 5. Repeat for All Servos
+#### 6. Repeat for All Servos
 
 Calibrate in this order for best results:
 1. Left Eye X

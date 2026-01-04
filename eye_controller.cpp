@@ -140,13 +140,30 @@ void EyeController::blinkRight(unsigned int durationMs) {
 
 // === Async Blink (non-blocking) ===
 
+unsigned int EyeController::calculateBlinkDuration(float lidLeft, float lidRight) {
+    // Calculate duration based on how far lids need to travel to close
+    // Travel distance: from current position to -100 (closed)
+    float travelLeft = lidLeft - (-100.0f);   // e.g., +100 to -100 = 200
+    float travelRight = lidRight - (-100.0f);
+    float maxTravel = max(travelLeft, travelRight);
+
+    // Scale: base 100ms + 0.75ms per unit of travel
+    // Examples:
+    //   +100 (wide open): 100 + 200*0.75 = 250ms
+    //   0 (neutral):      100 + 100*0.75 = 175ms
+    //   -50 (half closed): 100 + 50*0.75 = 137ms
+    return (unsigned int)(100 + maxTravel * 0.75f);
+}
+
 void EyeController::startBlink(unsigned int durationMs) {
     if (_animState != AnimState::IDLE) return;  // Don't interrupt ongoing animation
 
     _blinkPrevLeft = _lidLeft;
     _blinkPrevRight = _lidRight;
     _blinkEye = BlinkEye::BOTH;
-    _animDuration = durationMs;
+
+    // If durationMs is 0, calculate scaled duration based on lid position
+    _animDuration = (durationMs == 0) ? calculateBlinkDuration(_lidLeft, _lidRight) : durationMs;
     _animStartTime = millis();
     _animState = AnimState::BLINK_CLOSING;
 
@@ -158,7 +175,9 @@ void EyeController::startBlinkLeft(unsigned int durationMs) {
 
     _blinkPrevLeft = _lidLeft;
     _blinkEye = BlinkEye::LEFT;
-    _animDuration = durationMs;
+
+    // If durationMs is 0, calculate scaled duration based on lid position
+    _animDuration = (durationMs == 0) ? calculateBlinkDuration(_lidLeft, -100.0f) : durationMs;
     _animStartTime = millis();
     _animState = AnimState::BLINK_CLOSING;
 
@@ -170,7 +189,9 @@ void EyeController::startBlinkRight(unsigned int durationMs) {
 
     _blinkPrevRight = _lidRight;
     _blinkEye = BlinkEye::RIGHT;
-    _animDuration = durationMs;
+
+    // If durationMs is 0, calculate scaled duration based on lid position
+    _animDuration = (durationMs == 0) ? calculateBlinkDuration(-100.0f, _lidRight) : durationMs;
     _animStartTime = millis();
     _animState = AnimState::BLINK_CLOSING;
 

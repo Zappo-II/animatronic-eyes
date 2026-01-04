@@ -7,9 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned - v1.0 (Update Check)
-- Check GitHub for newer versions
-- Update available notification
+---
+
+## [1.0.0] - 2026-01-04
+
+### Added
+- **Update Check** - Automatic check for newer firmware versions on GitHub
+- Configurable frequency: boot only, daily, or weekly (default: daily)
+- Manual "Check Now" button in System section
+- Yellow pulsing indicator in header when update available (clicks to GitHub releases)
+- Update status displayed in System config card
+- Cached result persisted to NVS (survives reboot)
+- Cache auto-clears when user updates firmware
+- Recovery UI shows cached update status
+- WebSocket commands: `checkForUpdate`, `setUpdateCheckEnabled`, `setUpdateCheckInterval`
+- State broadcast includes `update` object: `available`, `version`, `lastCheck`, `checking`, `enabled`, `interval`
+
+### Changed
+- **WebSocket broadcast interval** - Increased from 75ms to 100ms to reduce connection drops
+- **Vergence intensity** - Reduced max vergence from 100 to 50 for less aggressive eye convergence
+
+### Fixed
+- **Invert checkbox safety** - Toggling invert now immediately moves servo to center position instead of mirroring current position, preventing potential mechanical damage when servo is near an extreme
+- **Invert immediate feedback** - Invert checkbox change is now sent to device immediately, so user can see the effect on test slider right away
+- **Blink not closing from wide open** - Blink duration now scales based on lid travel distance; lids at +100 get ~250ms, neutral gets ~175ms. Use `{"blink": 0}` in modes/impulses for auto-scaling, or specify explicit duration
+- **Connection status stuck on "Connected"** - Web UI now detects dead connections via heartbeat; shows "Disconnected" within 3 seconds if device is powered off
+
+### Technical
+- New `UpdateChecker` singleton class (`update_checker.h/.cpp`)
+- New NVS storage: `UpdateCheckConfig`, `UpdateCheckCache` structs
+- HTTPS fetch using `WiFiClientSecure` with `setInsecure()` for GitHub CDN
+- Semver comparison: major.minor.patch
+- 30s boot delay + random jitter (0-30 min) to prevent thundering herd
+- Check only when WiFi STA connected (skipped in AP-only mode)
 
 ---
 

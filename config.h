@@ -9,8 +9,8 @@
 #define CONFIG_H
 
 // Firmware version
-#define FIRMWARE_VERSION "0.9.17"
-#define MIN_UI_VERSION "0.9.17"  // Minimum UI version required by this firmware
+#define FIRMWARE_VERSION "1.0.0"
+#define MIN_UI_VERSION "1.0.0"  // Minimum UI version required by this firmware
 
 // Serial logging
 #define SERIAL_BAUD 115200
@@ -89,7 +89,7 @@
 #define SERVO_UPDATE_INTERVAL_MS 20  // Minimum ms between servo writes (prevents watchdog)
 
 // WebSocket broadcast interval
-#define WS_BROADCAST_INTERVAL_MS 75
+#define WS_BROADCAST_INTERVAL_MS 100
 
 // NVS namespace
 #define NVS_NAMESPACE "animeyes"
@@ -98,5 +98,20 @@
 #define ADMIN_TIMEOUT_MS 900000         // 15 minutes unlock timeout
 #define ADMIN_MAX_FAILED_ATTEMPTS 3     // Failed attempts before lockout
 #define ADMIN_LOCKOUT_MS 300000         // 5 minute lockout after max failures
+
+// Update Check
+#define UPDATE_CHECK_BOOT_DELAY_MS  30000     // 30s delay after boot before first check
+#define UPDATE_CHECK_JITTER_MS      1800000   // 30 min max random jitter
+#define GITHUB_VERSION_URL "https://raw.githubusercontent.com/Zappo-II/animatronic-eyes/main/data/version.json"
+#define GITHUB_RELEASES_URL "https://github.com/Zappo-II/animatronic-eyes/releases"
+
+// Update check interval options (in ms)
+#define UPDATE_INTERVAL_BOOT_ONLY   0
+#define UPDATE_INTERVAL_DAILY       86400000   // 24 hours
+#define UPDATE_INTERVAL_WEEKLY      604800000  // 7 days
+
+// Update check defaults
+#define DEFAULT_UPDATE_CHECK_ENABLED true
+#define DEFAULT_UPDATE_CHECK_INTERVAL 1  // 0=boot only, 1=daily, 2=weekly
 
 #endif // CONFIG_H

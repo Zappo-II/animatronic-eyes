@@ -11,12 +11,14 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
 ## Features
 
 - **Intuitive Web UI** - Control eyes from any device with a browser
-- **Mode System** - Autonomous behaviors: Natural, Sleepy, Alert, Spy, Crazy
+- **Mode System** - Autonomous behaviors (Natural, Sleepy, Alert, Spy, Crazy) - [create your own!](docs/usage.md#custom-modes)
+- **Impulse System** - Triggered reactions (Startle, Distraction) - [fully customizable](docs/usage.md#custom-impulses)
 - **Follow Mode** - Manual control with touch-friendly gaze pad
 - **Gaze Control** - Natural eye movement with vergence (eyes converge on close objects)
 - **Eyelid Control** - Independent or linked eyelid movement with blink animations
 - **Auto-Blink** - Configurable automatic blinking for realistic behavior
 - **Live Calibration** - Tune servo positions in real-time
+- **Admin Lock** - PIN protection for configuration settings
 - **WiFi Connectivity** - Connect to your home network or use the built-in access point
 - **OTA Updates** - Update firmware and UI wirelessly
 - **Recovery Mode** - Built-in recovery UI if something goes wrong
@@ -35,12 +37,14 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
 ## Quick Start
 
 1. **Download** `animatronic-eyes.ino.bin` and `ui.bin` from [Releases](https://github.com/Zappo-II/animatronic-eyes/releases)
-2. **Flash firmware**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
+2. **Flash firmware via USB**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
 3. **Connect** to WiFi `LookIntoMyEyes-XXXXXX` (password: `12345678`)
-4. **Open** http://192.168.4.1/recovery
+4. **Open** http://192.168.4.1
 5. **Upload UI** via the recovery page
 
 Subsequent updates (firmware and UI) can be uploaded via the web interface - no USB required.
+
+> **Power Warning:** Never connect USB 5V and external 5V to the ESP32 at the same time - only share ground. See [Power Configuration Options](docs/troubleshooting.md#power-configuration-options) for safe wiring.
 
 To build from source, see the [Setup Guide](docs/setup.md).
 
@@ -59,7 +63,7 @@ To build from source, see the [Setup Guide](docs/setup.md).
 
 ## Current Version
 
-**v0.9.17** - UI polish: yellow indicator colors, Auto-I runtime override fix, PIN timeout UI fix, layout tweaks.
+**v1.0.0** - Update Check: automatic GitHub version checking with configurable frequency, header indicator, and cache persistence.
 
 ## Roadmap
 
@@ -73,7 +77,7 @@ To build from source, see the [Setup Guide](docs/setup.md).
 | v0.7 | **Mode System** - Autonomous behaviors | ✅ Complete |
 | v0.8 | **Impulses** - Triggered reactions (Startle, Distraction) | ✅ Complete |
 | v0.9 | **Admin Lock** - PIN protection for settings | ✅ Complete |
-| v1.0 | **Update Check** - GitHub version notifications | Planned |
+| v1.0 | **Update Check** - GitHub version notifications | ✅ Complete |
 
 ## License
 
@@ -89,7 +93,7 @@ See [LICENSE](LICENSE) for details.
 
 ## Acknowledgements
 
-Hardware designed by **Morgan Manly**:
+Device - Hardware designed by **Morgan Manly**:
 - [GitHub](https://github.com/ManlyMorgan)
 - [Instructables](https://www.instructables.com/member/MorganManly/)
 - [Makerworld](https://makerworld.com/en/@manlymorgan)

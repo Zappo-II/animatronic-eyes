@@ -34,7 +34,7 @@ void AutoBlink::loop() {
 
     if (millis() >= _nextBlinkTime) {
         WEB_LOG("AutoBlink", "Auto-triggered blink");
-        eyeController.startBlink(150);  // Standard blink duration
+        eyeController.startBlink(0);  // 0 = scaled duration based on lid position
         scheduleNextBlink();
     }
 }

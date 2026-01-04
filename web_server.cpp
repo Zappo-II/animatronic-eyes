@@ -17,6 +17,7 @@
 #include "mode_player.h"
 #include "impulse_player.h"
 #include "auto_impulse.h"
+#include "update_checker.h"
 
 #include <ESPAsyncWebServer.h>
 #include <stdarg.h>
@@ -99,6 +100,7 @@ a{color:#e94560}
 <div class="version-info"><span>UI Version</span><span id="ui-version">-</span></div>
 <div class="version-info"><span>UI Requires Firmware</span><span id="ui-min-fw">-</span></div>
 <div class="version-info"><span>Free Heap</span><span id="free-heap">-</span></div>
+<div class="version-info" id="update-row" style="display:none;color:#f39c12"><span>Update Available</span><span id="update-version">-</span></div>
 </div>
 
 <div class="warning" id="lock-banner" style="display:none">
@@ -245,6 +247,18 @@ async function loadInfo() {
       banner.style.display = 'block';
       title.textContent = 'UI Too Old:';
       msg.textContent = 'Firmware requires UI ' + d.minUiVersion + ' but device has ' + d.uiVersion + '. Upload newer UI below.';
+    }
+    // Show update available if cached
+    if (d.updateAvailable && d.updateVersion) {
+      document.getElementById('update-row').style.display = 'flex';
+      const link = document.createElement('a');
+      link.href = 'https://github.com/Zappo-II/animatronic-eyes/releases';
+      link.target = '_blank';
+      link.textContent = 'v' + d.updateVersion;
+      link.style.color = '#f39c12';
+      const span = document.getElementById('update-version');
+      span.innerHTML = '';
+      span.appendChild(link);
     }
   } catch(e) { console.error(e); }
 }
@@ -787,6 +801,10 @@ void WebServer::setupRoutes() {
         snprintf(deviceId, sizeof(deviceId), "%06X", (uint32_t)(chipId & 0xFFFFFF));
         doc["deviceId"] = deviceId;
 
+        // Update check status (for recovery UI)
+        doc["updateAvailable"] = updateChecker.isUpdateAvailable();
+        doc["updateVersion"] = updateChecker.getAvailableVersion();
+
         String response;
         serializeJson(doc, response);
         request->send(200, "application/json", response);
@@ -1327,6 +1345,15 @@ void WebServer::broadcastState() {
     impulseState["impulseIntervalMax"] = autoImpulse.getIntervalMax();
     impulseState["impulseSelection"] = autoImpulse.getSelection();
     // NOTE: Available impulses sent once on connect via sendAvailableLists()
+
+    // Update Check state
+    JsonObject updateState = doc["update"].to<JsonObject>();
+    updateState["available"] = updateChecker.isUpdateAvailable();
+    updateState["version"] = updateChecker.getAvailableVersion();
+    updateState["lastCheck"] = updateChecker.getLastCheckTime();
+    updateState["checking"] = updateChecker.isCheckInProgress();
+    updateState["enabled"] = updateChecker.isEnabled();
+    updateState["interval"] = updateChecker.getInterval();
 
     size_t len = serializeJson(doc, jsonBuffer, sizeof(jsonBuffer));
     if (len > 0 && len < sizeof(jsonBuffer)) {
@@ -1873,19 +1900,19 @@ void WebServer::handleWebSocketMessage(const char* data, AsyncWebSocketClient* c
         autoBlink.resetTimer();  // Prevent auto-blink from fighting with manual lid control
     }
     else if (strcmp(type, "blink") == 0) {
-        unsigned int duration = doc["duration"] | 150;
+        unsigned int duration = doc["duration"] | 0;  // 0 = scaled based on lid position
         eyeController.startBlink(duration);
         autoBlink.resetTimer();
         WEB_LOG("Control", "Blink");
     }
     else if (strcmp(type, "blinkLeft") == 0) {
-        unsigned int duration = doc["duration"] | 150;
+        unsigned int duration = doc["duration"] | 0;  // 0 = scaled based on lid position
         eyeController.startBlinkLeft(duration);
         autoBlink.resetTimer();
         WEB_LOG("Control", "Wink left");
     }
     else if (strcmp(type, "blinkRight") == 0) {
-        unsigned int duration = doc["duration"] | 150;
+        unsigned int duration = doc["duration"] | 0;  // 0 = scaled based on lid position
         eyeController.startBlinkRight(duration);
         autoBlink.resetTimer();
         WEB_LOG("Control", "Wink right");
@@ -2035,17 +2062,15 @@ void WebServer::handleWebSocketMessage(const char* data, AsyncWebSocketClient* c
         // Trigger impulse (uses preloaded or loads specified name)
         const char* name = doc["name"];
         if (name && strlen(name) > 0) {
-            if (impulsePlayer.triggerByName(name)) {
-                WEB_LOG("Control", "Impulse triggered: %s", name);
-            } else {
-                WEB_LOG("Control", "Failed to trigger impulse: %s", name);
+            WEB_LOG("Control", "Impulse triggered: %s", name);
+            if (!impulsePlayer.triggerByName(name)) {
+                WEB_LOG("Control", "Impulse trigger failed: %s", name);
             }
         } else {
             // Trigger preloaded impulse
-            if (impulsePlayer.trigger()) {
-                WEB_LOG("Control", "Impulse triggered (preloaded)");
-            } else {
-                WEB_LOG("Control", "Failed to trigger impulse");
+            WEB_LOG("Control", "Impulse triggered");
+            if (!impulsePlayer.trigger()) {
+                WEB_LOG("Control", "Impulse trigger failed");
             }
         }
         autoImpulse.resetTimer();  // Reset auto-impulse timer
@@ -2437,6 +2462,37 @@ void WebServer::handleWebSocketMessage(const char* data, AsyncWebSocketClient* c
     }
     else if (strcmp(type, "getAdminState") == 0) {
         sendAdminState(client);
+    }
+    // ========================================================================
+    // Update Check Commands
+    // ========================================================================
+    else if (strcmp(type, "checkForUpdate") == 0) {
+        // Always allowed (read-only action)
+        WEB_LOG("Update", "Manual update check requested");
+        updateChecker.checkNow();
+    }
+    else if (strcmp(type, "setUpdateCheckEnabled") == 0) {
+        // Protected: requires admin unlock
+        if (!isClientAuthenticated(client)) {
+            WEB_LOG("Admin", "setUpdateCheckEnabled blocked: not authenticated");
+            sendAdminBlocked(client, "setUpdateCheckEnabled");
+            return;
+        }
+        bool enabled = doc["enabled"] | true;
+        updateChecker.setEnabled(enabled);
+        WEB_LOG("Update", "Update check %s", enabled ? "enabled" : "disabled");
+    }
+    else if (strcmp(type, "setUpdateCheckInterval") == 0) {
+        // Protected: requires admin unlock
+        if (!isClientAuthenticated(client)) {
+            WEB_LOG("Admin", "setUpdateCheckInterval blocked: not authenticated");
+            sendAdminBlocked(client, "setUpdateCheckInterval");
+            return;
+        }
+        uint8_t interval = doc["interval"] | 1;
+        if (interval > 2) interval = 1;  // Validate: 0, 1, or 2
+        updateChecker.setInterval(interval);
+        WEB_LOG("Update", "Update check interval set to %d", interval);
     }
     else {
         WEB_LOG("WS", "Unknown command: %s", type);

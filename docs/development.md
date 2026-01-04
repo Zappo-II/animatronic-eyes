@@ -61,6 +61,7 @@ Use consistent prefixes for log messages:
 | `[OTA]` | Firmware updates |
 | `[LED]` | Status LED |
 | `[Admin]` | Admin authentication events |
+| `[Update]` | Update checker events |
 
 ### WEB_LOG Macro
 
@@ -338,9 +339,13 @@ Modes are JSON files stored in `data/modes/`. Each mode defines an autonomous be
 #### blink - Trigger Blink
 ```json
 {"blink": 150}
+{"blink": 0}
 ```
 
-Value is duration in milliseconds.
+Value is duration in milliseconds. Use `0` for auto-scaled duration based on current lid position (recommended). Auto-scaling gives lids enough time to fully close regardless of starting position:
+- Wide open (+100): ~250ms
+- Neutral (0): ~175ms
+- Half closed (-50): ~137ms
 
 #### wait - Pause Sequence
 ```json

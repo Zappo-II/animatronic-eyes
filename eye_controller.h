@@ -90,7 +90,7 @@ private:
 
     // Parameters
     float _coupling = 1.0;      // Fully linked with vergence (normal)
-    float _maxVergence = 100.0; // Max horizontal vergence offset at Z=-100
+    float _maxVergence = 50.0; // Max horizontal vergence offset at Z=-100
     float _maxVerticalDivergence = 50.0; // Max vertical divergence when coupling=-1 (Feldman mode)
 
     // === Async Animation State Machine ===
@@ -108,6 +108,9 @@ private:
 
     // Calculate vergence offset based on Z depth
     float calculateVergence(float z);
+
+    // Calculate blink duration based on lid travel distance
+    unsigned int calculateBlinkDuration(float lidLeft, float lidRight);
 
     // Map logical coordinate (-100 to +100) to servo position
     // Uses servo's calibration (min/center/max) and invert flag

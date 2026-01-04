@@ -166,8 +166,12 @@ void ServoController::setInvert(uint8_t index, bool invert) {
     _configs[index].invert = invert;
     storage.setServoInvert(index, invert);
 
-    // Re-apply current position with new invert setting
-    uint8_t actualPos = applyInvert(index, _positions[index]);
+    // Move to center position for safety - avoids dangerous jump to mirrored position
+    // which could damage mechanical linkages if servo was near an extreme
+    uint8_t centerPos = _configs[index].center;
+    _positions[index] = centerPos;
+    _targetPositions[index] = centerPos;
+    uint8_t actualPos = applyInvert(index, centerPos);
     servos[index].write(actualPos);
 }
 

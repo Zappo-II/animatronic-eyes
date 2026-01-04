@@ -33,6 +33,7 @@ The header shows device status at a glance:
 | **UI** (yellow) | Minor version mismatch |
 | **UI** (red) | Major version mismatch - update recommended |
 | **Reboot** (yellow, flashing) | Reboot required for changes to take effect |
+| **⬆️** (yellow, pulsing) | Firmware update available - click to open releases |
 
 Click the **info icon (i)** to view the About section with version and device details.
 
@@ -126,8 +127,62 @@ You can temporarily override auto modes:
 - **Gaze pad**: Touch pauses the mode briefly, then it resumes
 - **Lid sliders**: Manual lid control pauses the mode
 - **Blink/Wink buttons**: Trigger immediate blink, mode continues
+- **Impulse button**: Trigger immediate random impulse, mode continues
 
 Switching modes always resets eye state to neutral (including Z and coupling).
+
+### Custom Modes
+
+You can create your own autonomous behaviors by uploading JSON files to the device. Custom modes appear alongside built-in modes in the dropdown. See [Development Guide](development.md#creating-custom-modes) for detailed examples.
+
+#### Mode JSON Format
+
+```json
+{
+  "name": "My Custom Mode",
+  "loop": true,
+  "coupling": 1.0,
+  "sequence": [
+    {"gaze": {"x": 0, "y": 0, "z": 50}},
+    {"wait": 2000},
+    {"gaze": {"x": {"random": [-30, 30]}, "y": {"random": [-20, 20]}}},
+    {"wait": {"random": [1000, 3000]}},
+    {"blink": 150}
+  ]
+}
+```
+
+#### Primitives
+
+| Primitive | Parameters | Description |
+|-----------|------------|-------------|
+| `gaze` | `x`, `y`, `z` (-100 to +100) | Set eye position |
+| `lids` | `left`, `right` (-100 to +100) | Set eyelid positions |
+| `blink` | duration in ms (0 = auto-scale) | Trigger a blink |
+| `wait` | milliseconds | Pause before next step |
+
+#### Random Values
+
+Any numeric value can be randomized:
+```json
+{"x": {"random": [-30, 30]}}
+{"wait": {"random": [1000, 3000]}}
+```
+
+#### Coupling
+
+The `coupling` parameter controls eye coordination:
+- `1.0` - Eyes move together with natural vergence
+- `0.0` - Eyes move independently
+- `-1.0` - "Feldman mode" - eyes diverge
+
+#### Uploading Custom Modes
+
+1. Create a JSON file following the format above
+2. Include it in the `data/modes/` folder
+3. Upload via "Upload UI Files" in Configuration tab
+
+Alternatively, use Backup/Restore to include custom modes in your backup file.
 
 ### Auto-Blink
 
@@ -182,6 +237,47 @@ Like auto-blink, auto-impulse triggers random impulses at configurable intervals
 - Works in all modes (Follow and Auto)
 - Can be toggled via Auto-I button or in settings
 
+### Custom Impulses
+
+Create your own reaction animations by uploading JSON files. Custom impulses appear in the Impulse Selection checkboxes. See [Development Guide](development.md#creating-custom-impulses) for detailed examples.
+
+#### Impulse JSON Format
+
+```json
+{
+  "name": "Surprise",
+  "restore": true,
+  "sequence": [
+    {"lids": {"left": 100, "right": 100}},
+    {"gaze": {"x": {"random": [-30, 30]}, "y": {"random": [10, 30]}}},
+    {"wait": 200}
+  ]
+}
+```
+
+Key difference from modes: use `"restore": true` instead of `"loop": true`. This saves the current state before playing and restores it after.
+
+#### Primitives
+
+Same as modes:
+
+| Primitive | Parameters | Description |
+|-----------|------------|-------------|
+| `gaze` | `x`, `y`, `z` (-100 to +100) | Set eye position |
+| `lids` | `left`, `right` (-100 to +100) | Set eyelid positions |
+| `blink` | duration in ms (0 = auto-scale) | Trigger a blink |
+| `wait` | milliseconds | Pause before next step |
+
+#### Uploading Custom Impulses
+
+1. Create a JSON file following the format above
+2. Include it in the `data/impulses/` folder
+3. Upload via "Upload UI Files" in Configuration tab
+
+Alternatively, use Backup/Restore to include custom impulses in your backup file.
+
+**Tip**: After uploading, enable your custom impulse in Impulse Selection to include it in auto-impulse and the random trigger button.
+
 ---
 
 ## Calibration Tab
@@ -194,7 +290,7 @@ Each servo has a card with:
 - **Name**: Which servo (Left Eye X, Right Eyelid, etc.)
 - **Pin**: GPIO pin number (configurable)
 - **Min/Center/Max**: Calibration range in degrees (0-180)
-- **Invert**: Reverse servo direction
+- **Invert**: Reverse servo direction (takes effect immediately, moves servo to center)
 - **Test Slider**: Move servo to any position within its range
 
 ### Calibration Process
@@ -310,6 +406,23 @@ When unlocked:
 
 **Note**: Admin PIN is not included in backups and must be configured separately on each device.
 
+### Update Check
+
+Check for newer firmware versions on GitHub:
+
+- **Check for updates**: Enable/disable automatic version checking
+- **Frequency**: How often to check (On startup only, Daily, Weekly)
+- **Check Now**: Manual check button (always allowed, even when locked)
+
+When an update is available:
+- Yellow pulsing ⬆️ indicator appears in header
+- Click the indicator to open GitHub releases page
+- Status shown in the Update Check section
+
+**Schedule**: Checks occur at boot (after 30s delay) and then at the configured interval. Random jitter (0-30 min) is added to prevent all devices checking at the same time.
+
+**Note**: Update checking requires WiFi connection to your home network. It does not work in AP-only mode.
+
 ### System
 
 - **Upload Firmware**: OTA update via .bin file
@@ -413,6 +526,6 @@ The status LED (if enabled) indicates device state:
 
 ### Performance
 
-- The device broadcasts state every 75ms via WebSocket
+- The device broadcasts state every 100ms via WebSocket
 - Servo movements are throttled to prevent watchdog crashes
 - Close other browser tabs to reduce WebSocket reconnection attempts

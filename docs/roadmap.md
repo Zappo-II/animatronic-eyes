@@ -4,26 +4,27 @@ Detailed specifications for planned features.
 
 ---
 
-## v1.0 - Update Check (Stretch Goal)
+## ✅ v1.0 - Update Check
 
 Check if newer version is available on GitHub. No automatic download - just notification.
 
-### Check Mechanism
+### Features
 
-- [ ] Fetch `https://raw.githubusercontent.com/Zappo-II/animatronic-eyes/main/data/version.json`
-- [ ] Compare `version` field with running `FIRMWARE_VERSION`
-- [ ] Cache result in memory
-- [ ] Re-check every 6 hours (or on boot if WiFi connected)
-- [ ] Manual "Check now" button in System section
+- [x] Fetch `https://raw.githubusercontent.com/Zappo-II/animatronic-eyes/main/data/version.json`
+- [x] Compare `version` field with running `FIRMWARE_VERSION`
+- [x] Cache result in NVS (persists across reboots)
+- [x] Configurable check frequency: boot only, daily (default), weekly
+- [x] Check at boot (after 30s delay) + periodic based on interval
+- [x] Manual "Check Now" button in System section (always allowed)
 
 ### Safe Practices (GitHub Rate Limits)
 
-- [ ] Use `raw.githubusercontent.com` (CDN-cached, more lenient than API)
-- [ ] Cache aggressively - don't re-fetch if checked within last hour
-- [ ] Only check on boot + 6h timer, not on every WiFi reconnect
-- [ ] Add random jitter (0-30 min) to interval to avoid thundering herd
-- [ ] Silent fail on error - don't hammer GitHub, retry next interval
-- [ ] No retry loop on failure - single attempt per check
+- [x] Use `raw.githubusercontent.com` (CDN-cached, more lenient than API)
+- [x] Cache aggressively in NVS
+- [x] Random jitter (0-30 min) added to interval to avoid thundering herd
+- [x] Silent fail on error - retry next interval
+- [x] No retry loop on failure - single attempt per check
+- [x] Only check when WiFi STA connected (skip in AP-only mode)
 
 ### Header Indicator (when update available)
 
@@ -31,54 +32,38 @@ Check if newer version is available on GitHub. No automatic download - just noti
 [AP] [WiFi] [UI] [⬆️] [Reboot]
 ```
 
-- [ ] Yellow flashing ⬆️ indicator (same style as Reboot indicator)
-- [ ] Tooltip on hover/tap: "Update available: v0.5.17"
-- [ ] Click opens GitHub releases page in new tab
+- [x] Yellow pulsing ⬆️ indicator
+- [x] Tooltip on hover/tap: "Update available: v1.0.1"
+- [x] Click opens GitHub releases page in new tab
 
-### System Section Display
+### System Section - Update Check Card
 
-```
-Firmware            0.5.16
-Min UI Required     0.5.16
-UI Version          0.5.16
-UI Requires FW      0.5.16
-⬆️ Update available  0.5.17  ← prominent styling, linked
-Free Heap           184.6 KB
-```
+- [x] Enable/disable checkbox (admin protected)
+- [x] Frequency dropdown: On startup only, Daily, Weekly (admin protected)
+- [x] Check Now button (always allowed)
+- [x] Status display: checking, up to date, update available with link
 
-- [ ] Row only shown when update available
-- [ ] Version number links to `https://github.com/Zappo-II/animatronic-eyes/releases`
-- [ ] Prominent styling: bold, yellow/orange (#f39c12), subtle background highlight
-- [ ] ⬆️ icon prefix
+### Admin Lock
 
-### Styling
+- [x] `checkForUpdate` - Always allowed (read-only action)
+- [x] `setUpdateCheckEnabled` - Protected (requires admin unlock)
+- [x] `setUpdateCheckInterval` - Protected (requires admin unlock)
 
-```css
-.update-available {
-    color: #f39c12;
-    font-weight: 600;
-    background: rgba(243, 156, 18, 0.1);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-}
-```
+### Recovery UI
 
-### States
-
-| Condition | Header | System Section |
-|-----------|--------|----------------|
-| Update available | ⬆️ flashing yellow | Row shown with link |
-| Up to date | No indicator | Row not shown |
-| Check failed | No indicator | Row not shown (silent fail) |
-| No WiFi | No indicator | Row not shown |
+- [x] Shows cached update status if available
+- [x] Version links to GitHub releases
 
 ### File Changes
 
-- [ ] `web_server.cpp` - HTTPS fetch from GitHub, version compare, cache result
-- [ ] `web_server.cpp` - Include update status in `/api/version` response
-- [ ] `data/index.html` - Header indicator, system section row
-- [ ] `data/style.css` - Update indicator styles, update-available row styles
-- [ ] `data/app.js` - Display logic, tooltip, click handler
+- [x] `config.h` - Update check constants, GitHub URLs
+- [x] `storage.h/.cpp` - UpdateCheckConfig and UpdateCheckCache structs
+- [x] `update_checker.h/.cpp` - New module for version checking
+- [x] `web_server.cpp` - State broadcast, WebSocket commands, recovery UI
+- [x] `animatronic-eyes.ino` - Include and init updateChecker
+- [x] `data/index.html` - Header indicator, Update Check config card
+- [x] `data/style.css` - Update indicator and status styles
+- [x] `data/app.js` - Indicator logic, handlers, UI updates
 
 ---
 
@@ -361,7 +346,7 @@ JSON-defined autonomous behaviors. **XOR with Follow Mode** - one active at a ti
 |-----------|------------|-------------|
 | `gaze(x, y, z)` | -100 to +100 each | Look at point |
 | `lids(left, right)` | -100 to +100 | Set eyelid positions |
-| `blink(duration)` | milliseconds | Quick blink |
+| `blink(duration)` | milliseconds (0 = auto-scale) | Quick blink |
 | `wait(ms)` | milliseconds | Pause |
 | `random(min, max)` | range | Randomness for generative behaviors |
 

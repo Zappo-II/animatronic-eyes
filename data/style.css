@@ -107,6 +107,17 @@ h1 {
     color: #e94560;
 }
 
+.indicator.update-available {
+    background: #4d3d1a;
+    color: #f39c12;
+    animation: pulse 1.5s infinite;
+    cursor: pointer;
+}
+
+.indicator.update-available:hover {
+    background: #5d4d2a;
+}
+
 .indicator.hidden {
     display: none;
 }
@@ -357,6 +368,41 @@ h1 {
 
 .pin-form .btn {
     padding: 0.5rem 1rem;
+}
+
+/* Update Check */
+.update-status {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: #16213e;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.update-status.update-available {
+    border-left: 3px solid #f39c12;
+    color: #f39c12;
+}
+
+.update-status.up-to-date {
+    border-left: 3px solid #2d5a27;
+    color: #7fbf7f;
+}
+
+.update-status.checking {
+    border-left: 3px solid #4d4d1a;
+    color: #e6e050;
+}
+
+.update-status a {
+    color: #f39c12;
+    text-decoration: underline;
+}
+
+.update-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
 }
 
 /* Tab Navigation */
