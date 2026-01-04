@@ -27,12 +27,12 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
 
 ## Hardware Requirements
 
-| Component | Specification |
-|-----------|--------------|
-| Microcontroller | [ESP32 Dev Kit C V4](https://www.az-delivery.de/products/esp-32-dev-kit-c-v4) |
-| Servos | 6x [MG90S](https://www.az-delivery.de/products/mg90s-micro-servomotor) |
-| 3D Printed Parts | [Morgan Manly's designs](https://www.instructables.com/member/MorganManly/) |
-| Power Supply | 5V 2A+ recommended |
+| Component | Specification | Notes |
+|-----------|--------------|-------|
+| Microcontroller | [ESP32 Dev Kit C V4](https://www.az-delivery.de/products/esp-32-dev-kit-c-v4) | Any ESP32 with sufficient GPIO |
+| Servos | 6x [MG90S](https://www.az-delivery.de/products/mg90s-micro-servomotor) | Metal gear micro servos |
+| 3D Printed Parts | [Morgan Manly's designs](https://www.instructables.com/member/MorganManly/) | See [Acknowledgements](#acknowledgements) <br> Other device hardware might also work... |
+| Power Supply | 5V 2A+ | Servos draw significant current |
 
 ## Quick Start
 
@@ -42,9 +42,10 @@ Control realistic eye movements, eyelid animations, and gaze tracking through yo
    - **Arduino IDE**: Open any sketch, select your board/port, then Sketch → Upload Compiled Binary
    - **Command line**: `esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x10000 animatronic-eyes.ino.bin`
      - Find esptool: `pip install esptool` or check `~/.arduino15/packages/esp32/tools/esptool_py/*/`
+   - **Makefile**: Uses `docker` - see the [Setup Guide](docs/setup.md)
 3. **Connect** to WiFi `LookIntoMyEyes-XXXXXX` (password: `12345678`)
 4. **Open** http://192.168.4.1
-5. **Upload UI** via the recovery page
+5. **Upload UI** via the recovery page of the device's firmware
 
 Subsequent updates (firmware and UI) can be uploaded via the web interface - no USB required.
 
@@ -101,6 +102,15 @@ Device - Hardware designed by **Morgan Manly**:
 - [GitHub](https://github.com/ManlyMorgan)
 - [Instructables](https://www.instructables.com/member/MorganManly/)
 - [Makerworld](https://makerworld.com/en/@manlymorgan)
+
+## Third-Party Libraries
+
+| Library | Author | License |
+|---------|--------|---------|
+| [ESPAsyncWebServer](https://github.com/ESP32Async/ESPAsyncWebServer) | ESP32Async | LGPL-3.0 |
+| [AsyncTCP](https://github.com/ESP32Async/AsyncTCP) | ESP32Async | LGPL-3.0 |
+| [ArduinoJson](https://github.com/bblanchon/ArduinoJson) | Benoit Blanchon | MIT |
+| [ESP32Servo](https://github.com/madhephaestus/ESP32Servo) | Kevin Harrington | LGPL-2.1+ |
 
 ## Contributing
 
