@@ -4,9 +4,10 @@ Complete installation instructions for the Animatronic Eyes project.
 
 ## Prerequisites
 
-- Arduino IDE 2.x (or 1.8.x)
-- USB cable for ESP32 programming
-- Assembled animatronic eyes hardware (see [Hardware Requirements](#hardware-requirements))
+Choose your build method:
+
+- **Arduino IDE** - GUI-based, good for beginners and one-off builds
+- **Command-line (Docker)** - Reproducible builds, automation, no local tool installation
 
 ## Hardware Requirements
 
@@ -33,10 +34,12 @@ All pins are configurable via the web UI.
 
 ---
 
+# Option A: Arduino IDE
+
 ## Step 1: Install Arduino IDE
 
 1. Download Arduino IDE from [arduino.cc](https://www.arduino.cc/en/software)
-2. Install and launch
+2. Install and launch (version 2.x recommended)
 
 ## Step 2: Add ESP32 Board Support
 
@@ -48,7 +51,7 @@ All pins are configurable via the web UI.
 3. Click **OK**
 4. Open **Tools → Board → Boards Manager**
 5. Search for "esp32"
-6. Install **"ESP32 by Espressif Systems"** (version 3.x recommended)
+6. Install **"ESP32 by Espressif Systems"** version **3.3.5**
 
 ## Step 3: Install Required Libraries
 
@@ -56,19 +59,19 @@ Open **Sketch → Include Library → Manage Libraries** and install:
 
 | Library | Author | Version | Notes |
 |---------|--------|---------|-------|
-| **ESPAsyncWebServer** | ESP32Async | 3.9.x | Async web server with WebSocket |
-| **AsyncTCP** | ESP32Async | 3.4.x | Required by ESPAsyncWebServer |
-| **ArduinoJson** | Benoit Blanchon | 7.4.x | JSON parsing |
-| **ESP32Servo** | Kevin Harrington | 3.0.x | PWM servo control |
+| **ESPAsyncWebServer** | ESP32Async | 3.9.4 | Async web server with WebSocket |
+| **AsyncTCP** | ESP32Async | 3.4.10 | Required by ESPAsyncWebServer |
+| **ArduinoJson** | Benoit Blanchon | 7.4.2 | JSON parsing |
+| **ESP32Servo** | Kevin Harrington | 3.0.9 | PWM servo control |
 
-### Important: Use Maintained Library Forks
+### Important: Use the Correct Libraries
 
-The original me-no-dev libraries are archived and no longer maintained. Use the ESP32Async forks:
+The original me-no-dev libraries are archived and no longer maintained. Use the **ESP32Async** forks:
 
 - ESPAsyncWebServer: https://github.com/ESP32Async/ESPAsyncWebServer
 - AsyncTCP: https://github.com/ESP32Async/AsyncTCP
 
-These are available in the Arduino Library Manager. Search for "ESPAsyncWebServer" and select the one by "ESP32Async".
+In Arduino Library Manager, search for "ESPAsyncWebServer" and select the one by **"ESP32Async"** (not "me-no-dev" or "mathieucarbou").
 
 ## Step 4: Install LittleFS Upload Plugin
 
@@ -119,9 +122,11 @@ The web UI files must be uploaded to the ESP32's filesystem separately from the 
 ### Expected Compile Output
 
 ```
-Sketch uses 1088391 bytes (83%) of program storage space.
-Global variables use 45312 bytes (13%) of dynamic memory.
+Sketch uses 1303785 bytes (99%) of program storage space.
+Global variables use 53848 bytes (16%) of dynamic memory.
 ```
+
+Note: 99% flash usage is normal - the firmware is optimized to fit.
 
 ## Step 7: Upload Web UI Files
 
@@ -133,17 +138,134 @@ Or from menu: **Tools → ESP32 Sketch Data Upload**
 
 ---
 
-## First Boot
+# Option B: Command-Line (Docker)
 
-1. Open **Serial Monitor** (Tools → Serial Monitor or Ctrl+Shift+M)
-2. Set baud rate to **115200**
-3. Press the ESP32 reset button
+Reproducible builds using Docker - no need to install Arduino IDE, libraries, or tools locally.
+
+## Prerequisites
+
+Install these system packages:
+
+| Package | Purpose |
+|---------|---------|
+| docker | Build environment |
+| make | Build automation |
+| picocom | Serial monitor |
+| avahi | Device discovery (mDNS) |
+| curl | OTA deployment |
+| gh | GitHub releases (optional) |
+
+**Arch/Manjaro:**
+```bash
+pacman -S docker picocom github-cli avahi
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER  # Log out and back in
+```
+
+**Ubuntu/Debian:**
+```bash
+apt install docker.io picocom gh avahi-utils curl
+sudo usermod -aG docker $USER  # Log out and back in
+```
+
+## Step 1: Build Docker Image (One-Time)
+
+```bash
+make docker
+```
+
+This creates a Docker image with:
+- arduino-cli with ESP32 core 3.3.5
+- All required libraries (exact versions)
+- mklittlefs for UI filesystem
+- esptool for flashing
+
+## Step 2: Compile Firmware and UI
+
+```bash
+make build
+```
+
+Output files in `build/`:
+- `animatronic-eyes.ino.bin` - Firmware
+- `ui.bin` - Web UI filesystem
+
+## Step 3: Flash via USB
+
+```bash
+make flash-all          # Flash firmware and UI
+```
+
+Or separately:
+```bash
+make flash              # Firmware only
+make flash-ui           # UI only
+```
+
+Default port is `/dev/ttyUSB0`. Override with:
+```bash
+make flash-all PORT=/dev/ttyACM0
+```
+
+## Step 4: Serial Monitor
+
+```bash
+make monitor
+```
+
+Exit with `Ctrl+A` then `Ctrl+X`.
+
+## OTA Deployment (Wireless)
+
+After initial USB flash, deploy updates wirelessly:
+
+```bash
+make discover           # Find device on network, save IP
+make deploy-firmware    # Upload firmware (device reboots)
+make deploy-ui PIN=1234 # Upload UI with admin PIN
+```
+
+## All Make Targets
+
+| Target | Description |
+|--------|-------------|
+| `make help` | Show all targets and options |
+| `make docker` | Build Docker image (one-time) |
+| `make build` | Compile firmware and ui.bin |
+| `make flash` | Flash firmware via USB |
+| `make flash-ui` | Flash UI via USB |
+| `make flash-all` | Flash both via USB |
+| `make discover` | Find devices on network (mDNS) |
+| `make deploy-firmware` | Upload firmware via OTA |
+| `make deploy-ui` | Upload UI via OTA |
+| `make monitor` | Open serial monitor |
+| `make clean` | Remove build artifacts |
+| `make release V=x.y.z` | Create GitHub release |
+
+## Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | /dev/ttyUSB0 | Serial port for USB flash |
+| `BAUD` | 115200 | Baud rate for monitor |
+| `DEVICE` | (from .device) | Device IP for OTA |
+| `PIN` | - | Admin PIN for OTA |
+| `V` | - | Version for release |
+
+---
+
+# First Boot
+
+1. Open Serial Monitor:
+   - Arduino IDE: **Tools → Serial Monitor** (115200 baud)
+   - Command-line: `make monitor`
+2. Press the ESP32 reset button
 
 ### Expected Serial Output
 
 ```
 ================================
-Animatronic Eyes v0.9.17
+Animatronic Eyes v1.0.0
 ================================
 Free heap: 289324 bytes
 [Storage] Initialized
@@ -163,7 +285,7 @@ Setup complete!
 Free heap after init: 212492 bytes
 ```
 
-## Step 8: Connect to Device
+## Connect to Device
 
 1. On your phone/computer, look for WiFi network: **LookIntoMyEyes-XXXXXX**
    (XXXXXX is your device's unique ID)
@@ -187,4 +309,5 @@ If something doesn't work, see [Troubleshooting & FAQ](troubleshooting.md).
 Common issues:
 - **Upload fails**: Check USB cable and port selection
 - **No WiFi network appears**: Check serial output for errors
-- **Web page doesn't load**: Ensure LittleFS was uploaded (Step 7)
+- **Web page doesn't load**: Ensure UI was uploaded (Step 7 / `make flash-ui`)
+- **OTA deploy fails**: Check device is on same network, try `make discover`

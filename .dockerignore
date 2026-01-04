@@ -1,0 +1,19 @@
+# Build artifacts
+build/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed for build)
+docs/
+*.md
+LICENSE

@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Docker build system** - Reproducible builds without local tool installation
+- **Makefile** - Build automation with targets: docker, build, flash, deploy, monitor, release
+- **OTA deployment** - `make deploy-firmware` and `make deploy-ui` for wireless updates
+- **Device discovery** - `make discover` finds devices via mDNS, saves IP for subsequent deploys
+
 ### Changed
 - **README Quick Start** - Added multiple flash options (web flasher, Arduino IDE, command line with esptool hints)
+
+### Documentation
+- **Setup guide rewrite** - Now covers both Arduino IDE and command-line (Docker) build methods
+- **Exact library versions** - ESP32 core 3.3.5, ESPAsyncWebServer 3.9.4, AsyncTCP 3.4.10, ArduinoJson 7.4.2, ESP32Servo 3.0.9
+- **Library source clarification** - Use ESP32Async forks, not me-no-dev or mathieucarbou
+- **Updated compile output** - Now shows 99% flash usage (was 83%)
 
 ---
 
