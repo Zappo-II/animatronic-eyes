@@ -515,7 +515,8 @@ These lists don't change at runtime, so sending them once reduces broadcast payl
     "lidLeft": 0,
     "lidRight": 0,
     "coupling": 1.0,
-    "maxVergence": 100
+    "maxVergence": 100,
+    "mirrorPreview": false
   },
   "mode": {
     "current": "follow",
@@ -606,6 +607,7 @@ Blink commands accept optional `duration` in milliseconds. If omitted (or 0), du
 {"type": "setModeConfig", "defaultMode": "follow", "autoBlinkEnabled": true, "blinkIntervalMin": 2000, "blinkIntervalMax": 6000}
 {"type": "listModes"}
 {"type": "setAutoBlinkOverride", "enabled": true}  // Runtime override for Control tab toggle
+{"type": "setMirrorPreview", "enabled": true}      // Flip eye preview horizontally
 ```
 
 #### Impulse System Commands

@@ -297,6 +297,7 @@ ModeConfig Storage::getModeConfig() {
     config.blinkIntervalMin = prefs.getUShort("mode_blkmin", DEFAULT_BLINK_INTERVAL_MIN);
     config.blinkIntervalMax = prefs.getUShort("mode_blkmax", DEFAULT_BLINK_INTERVAL_MAX);
     config.rememberLastMode = prefs.getBool("mode_remember", false);
+    config.mirrorPreview = prefs.getBool("mode_mirror", DEFAULT_MIRROR_PREVIEW);
     return config;
 }
 
@@ -306,6 +307,7 @@ void Storage::setModeConfig(const ModeConfig& config) {
     prefs.putUShort("mode_blkmin", config.blinkIntervalMin);
     prefs.putUShort("mode_blkmax", config.blinkIntervalMax);
     prefs.putBool("mode_remember", config.rememberLastMode);
+    prefs.putBool("mode_mirror", config.mirrorPreview);
 }
 
 // Impulse config

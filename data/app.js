@@ -28,7 +28,7 @@ let config = {
     ap: {ssidPrefix: 'LookIntoMyEyes', hasPassword: true},
     led: {enabled: true, pin: 2},
     mdns: {enabled: true, hostname: 'animatronic-eyes'},
-    mode: {defaultMode: 'follow', autoBlink: true, blinkIntervalMin: 2000, blinkIntervalMax: 6000, rememberLastMode: false},
+    mode: {defaultMode: 'follow', autoBlink: true, blinkIntervalMin: 2000, blinkIntervalMax: 6000, rememberLastMode: false, mirrorPreview: false},
     impulse: {autoImpulse: true, impulseIntervalMin: 30000, impulseIntervalMax: 120000, impulseSelection: 'startle,distraction'}
 };
 
@@ -450,7 +450,7 @@ function handleConfigResponse(data) {
         ap: data.ap || {},
         led: data.led || {},
         mdns: data.mdns || {},
-        mode: data.mode || {defaultMode: 'follow', autoBlink: true, blinkIntervalMin: 2000, blinkIntervalMax: 6000, rememberLastMode: false},
+        mode: data.mode || {defaultMode: 'follow', autoBlink: true, blinkIntervalMin: 2000, blinkIntervalMax: 6000, rememberLastMode: false, mirrorPreview: false},
         impulse: data.impulse || {autoImpulse: true, impulseIntervalMin: 30000, impulseIntervalMax: 120000, impulseSelection: 'startle,distraction'}
     };
     savedConfig = JSON.parse(JSON.stringify(config));
@@ -514,6 +514,7 @@ function populateConfigForms() {
     // Mode Settings
     document.getElementById('autoBlinkEnabled').checked = config.mode.autoBlink !== false;
     document.getElementById('rememberLastMode').checked = config.mode.rememberLastMode === true;
+    document.getElementById('mirrorPreview').checked = config.mode.mirrorPreview === true;
     document.getElementById('blinkIntervalMin').value = config.mode.blinkIntervalMin || 2000;
     document.getElementById('blinkIntervalMax').value = config.mode.blinkIntervalMax || 6000;
     // Default mode dropdown is populated by populateModeDropdowns when state is received
@@ -650,6 +651,7 @@ function checkDirty(sectionName) {
                 document.getElementById('defaultModeSelect').value !== (savedConfig.mode.defaultMode || 'follow') ||
                 document.getElementById('autoBlinkEnabled').checked !== (savedConfig.mode.autoBlink !== false) ||
                 document.getElementById('rememberLastMode').checked !== (savedConfig.mode.rememberLastMode === true) ||
+                document.getElementById('mirrorPreview').checked !== (savedConfig.mode.mirrorPreview === true) ||
                 parseInt(document.getElementById('blinkIntervalMin').value) !== (savedConfig.mode.blinkIntervalMin || 2000) ||
                 parseInt(document.getElementById('blinkIntervalMax').value) !== (savedConfig.mode.blinkIntervalMax || 6000);
             break;
@@ -877,6 +879,7 @@ function saveModeSettings() {
     const defaultMode = document.getElementById('defaultModeSelect').value;
     const autoBlink = document.getElementById('autoBlinkEnabled').checked;
     const rememberLastMode = document.getElementById('rememberLastMode').checked;
+    const mirrorPreview = document.getElementById('mirrorPreview').checked;
     const blinkIntervalMin = parseInt(document.getElementById('blinkIntervalMin').value) || 2000;
     const blinkIntervalMax = parseInt(document.getElementById('blinkIntervalMax').value) || 6000;
 
@@ -890,12 +893,14 @@ function saveModeSettings() {
     send({ type: 'setDefaultMode', mode: defaultMode });
     send({ type: 'setAutoBlink', enabled: autoBlink });
     send({ type: 'setRememberLastMode', enabled: rememberLastMode });
+    send({ type: 'setMirrorPreview', enabled: mirrorPreview });
     send({ type: 'setBlinkInterval', min: blinkIntervalMin, max: blinkIntervalMax });
 
     // Update savedConfig
     savedConfig.mode.defaultMode = defaultMode;
     savedConfig.mode.autoBlink = autoBlink;
     savedConfig.mode.rememberLastMode = rememberLastMode;
+    savedConfig.mode.mirrorPreview = mirrorPreview;
     savedConfig.mode.blinkIntervalMin = blinkIntervalMin;
     savedConfig.mode.blinkIntervalMax = blinkIntervalMax;
 
@@ -1026,6 +1031,7 @@ function revertSection(sectionName) {
             document.getElementById('defaultModeSelect').value = savedConfig.mode.defaultMode || 'follow';
             document.getElementById('autoBlinkEnabled').checked = savedConfig.mode.autoBlink !== false;
             document.getElementById('rememberLastMode').checked = savedConfig.mode.rememberLastMode === true;
+            document.getElementById('mirrorPreview').checked = savedConfig.mode.mirrorPreview === true;
             document.getElementById('blinkIntervalMin').value = savedConfig.mode.blinkIntervalMin || 2000;
             document.getElementById('blinkIntervalMax').value = savedConfig.mode.blinkIntervalMax || 6000;
             break;
@@ -1120,6 +1126,7 @@ function setupConfigSections() {
         {id: 'defaultModeSelect', section: 'modeSettings'},
         {id: 'autoBlinkEnabled', section: 'modeSettings'},
         {id: 'rememberLastMode', section: 'modeSettings'},
+        {id: 'mirrorPreview', section: 'modeSettings'},
         {id: 'blinkIntervalMin', section: 'modeSettings'},
         {id: 'blinkIntervalMax', section: 'modeSettings'},
         {id: 'autoImpulseEnabled', section: 'impulseSettings'},
@@ -3069,13 +3076,21 @@ function updateEyePreview(eye) {
     const gazeZ = eye.gazeZ ?? 0;
     const gazeX = eye.gazeX ?? 0;
     const gazeY = eye.gazeY ?? 0;
+    const mirrorPreview = eye.mirrorPreview ?? false;
 
     // Vergence: 0 at z=100 (far), maxVergence at z=-100 (close)
     const vergence = maxVergence * (100 - gazeZ) / 200;
 
     // Per-eye X positions with vergence
-    const leftEyeX = gazeX + vergence * coupling;
-    const rightEyeX = gazeX - vergence * coupling;
+    let leftEyeX = gazeX + vergence * coupling;
+    let rightEyeX = gazeX - vergence * coupling;
+
+    // Mirror mode: flip X axis so preview shows eyes from viewer's perspective
+    // (physical eyes looking "their left" appears as viewer's right)
+    if (mirrorPreview) {
+        leftEyeX = -leftEyeX;
+        rightEyeX = -rightEyeX;
+    }
 
     // Per-eye Y positions with vertical divergence (Feldman mode when coupling < 0)
     const maxVerticalDivergence = 50;

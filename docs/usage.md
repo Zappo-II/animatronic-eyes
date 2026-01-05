@@ -362,6 +362,7 @@ Configure autonomous behavior defaults:
 - **Startup Mode**: Which mode to start in after reboot (Follow or any Auto mode)
 - **Remember last active mode**: When checked, the startup mode automatically updates whenever you switch modes in the Control tab. The dropdown becomes read-only and shows the current mode. Uncheck to manually set a specific startup mode.
 - **Auto-Blink**: Enable/disable automatic blinking
+- **Mirror Preview**: Flip the eye preview horizontally. Enable this if the preview shows eyes moving opposite to the physical eyes. The preview normally shows eyes from their own perspective (left gaze = pupils move left), but with mirroring enabled it shows them from the viewer's perspective (left gaze = pupils move right, matching how they appear to someone facing the animatronic).
 - **Blink Interval**: Range for random blink timing (default: 2-6 seconds)
 
 ### Impulse Settings

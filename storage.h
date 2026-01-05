@@ -55,6 +55,7 @@ struct ModeConfig {
     uint16_t blinkIntervalMin; // Minimum ms between auto-blinks
     uint16_t blinkIntervalMax; // Maximum ms between auto-blinks
     bool rememberLastMode;    // If true, restore last active mode on boot
+    bool mirrorPreview;       // Mirror eye preview horizontally (swap left/right perspective)
 };
 
 // Maximum number of impulses that can be selected for auto-impulse

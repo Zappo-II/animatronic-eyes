@@ -12,9 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Makefile** - Build automation with targets: docker, build, flash, deploy, monitor, release
 - **OTA deployment** - `make deploy-firmware` and `make deploy-ui` for wireless updates
 - **Device discovery** - `make discover` finds devices via mDNS, saves IP for subsequent deploys
+- **DISCOVER_FILTER variable** - Customizable mDNS filter pattern for `make discover` (e.g., `DISCOVER_FILTER="my-device"`)
+- **Mirror Preview** - New toggle in Mode Settings to flip eye preview horizontally, matching physical eye orientation when viewed from the front
 
 ### Changed
 - **README Quick Start** - Added multiple flash options (web flasher, Arduino IDE, command line with esptool hints)
+
+### Fixed
+- **Admin unlock via curl** - Web UI now updates immediately when PIN is unlocked via HTTP REST endpoint (previously required page reload)
+- **Make deploy error handling** - Now properly detects success when device reboots mid-response (curl exit codes 52/56), and correctly reports failure when admin lock is active
 
 ### Documentation
 - **Setup guide rewrite** - Now covers both Arduino IDE and command-line (Docker) build methods

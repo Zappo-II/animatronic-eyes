@@ -45,6 +45,7 @@
 #define DEFAULT_AUTO_BLINK true         // Enable automatic blinking
 #define DEFAULT_BLINK_INTERVAL_MIN 2000 // Minimum ms between auto-blinks
 #define DEFAULT_BLINK_INTERVAL_MAX 6000 // Maximum ms between auto-blinks
+#define DEFAULT_MIRROR_PREVIEW false    // Mirror eye preview (flip horizontal)
 
 // Impulse System defaults
 #define DEFAULT_AUTO_IMPULSE true              // Enable automatic impulses

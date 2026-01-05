@@ -871,6 +871,7 @@ void WebServer::setupRoutes() {
                 authenticateIP(clientIP);
                 clearFailedAttempts(clientIP);
                 WEB_LOG("Admin", "IP %s authenticated via HTTP", clientIP.toString().c_str());
+                broadcastAdminStateToIP(clientIP);  // Notify WebSocket clients from same IP
                 request->send(200, "text/plain", "OK");
             } else {
                 WEB_LOG("Admin", "Unlock failed: wrong PIN from %s", clientIP.toString().c_str());
@@ -999,6 +1000,7 @@ void WebServer::setupRoutes() {
         mode["blinkIntervalMin"] = modeConfig.blinkIntervalMin;
         mode["blinkIntervalMax"] = modeConfig.blinkIntervalMax;
         mode["rememberLastMode"] = modeConfig.rememberLastMode;
+        mode["mirrorPreview"] = modeConfig.mirrorPreview;
 
         // Impulse config
         ImpulseConfig impulseConfig = storage.getImpulseConfig();
@@ -1185,6 +1187,7 @@ void WebServer::setupRoutes() {
                     modeConfig.blinkIntervalMin = mode["blinkIntervalMin"] | DEFAULT_BLINK_INTERVAL_MIN;
                     modeConfig.blinkIntervalMax = mode["blinkIntervalMax"] | DEFAULT_BLINK_INTERVAL_MAX;
                     modeConfig.rememberLastMode = mode["rememberLastMode"] | false;
+                    modeConfig.mirrorPreview = mode["mirrorPreview"] | DEFAULT_MIRROR_PREVIEW;
                     storage.setModeConfig(modeConfig);
                 }
 
@@ -1321,6 +1324,7 @@ void WebServer::broadcastState() {
     eye["lidRight"] = eyeController.getLidRight();
     eye["coupling"] = eyeController.getCoupling();
     eye["maxVergence"] = eyeController.getMaxVergence();
+    eye["mirrorPreview"] = storage.getModeConfig().mirrorPreview;
 
     // Mode System state
     JsonObject modeState = doc["mode"].to<JsonObject>();
@@ -1415,6 +1419,7 @@ void WebServer::sendConfigToClient(AsyncWebSocketClient* client) {
     mode["blinkIntervalMin"] = modeConfig.blinkIntervalMin;
     mode["blinkIntervalMax"] = modeConfig.blinkIntervalMax;
     mode["rememberLastMode"] = modeConfig.rememberLastMode;
+    mode["mirrorPreview"] = modeConfig.mirrorPreview;
 
     // Impulse config
     ImpulseConfig impulseConfig = storage.getImpulseConfig();
@@ -1971,6 +1976,13 @@ void WebServer::handleWebSocketMessage(const char* data, AsyncWebSocketClient* c
         }
         storage.setModeConfig(config);
         WEB_LOG("Mode", "Remember last mode %s", enabled ? "enabled" : "disabled");
+    }
+    else if (strcmp(type, "setMirrorPreview") == 0) {
+        bool enabled = doc["enabled"] | false;
+        ModeConfig config = storage.getModeConfig();
+        config.mirrorPreview = enabled;
+        storage.setModeConfig(config);
+        WEB_LOG("Eye", "Mirror preview %s", enabled ? "enabled" : "disabled");
     }
     else if (strcmp(type, "pauseAutoBlink") == 0) {
         // Temporary pause for calibration - pauses ALL automated control
