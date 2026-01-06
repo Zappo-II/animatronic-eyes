@@ -3085,18 +3085,22 @@ function updateEyePreview(eye) {
     let leftEyeX = gazeX + vergence * coupling;
     let rightEyeX = gazeX - vergence * coupling;
 
-    // Mirror mode: flip X axis so preview shows eyes from viewer's perspective
-    // (physical eyes looking "their left" appears as viewer's right)
-    if (mirrorPreview) {
-        leftEyeX = -leftEyeX;
-        rightEyeX = -rightEyeX;
-    }
-
     // Per-eye Y positions with vertical divergence (Feldman mode when coupling < 0)
     const maxVerticalDivergence = 50;
     const verticalDivergence = (coupling < 0) ? maxVerticalDivergence * (-coupling) : 0;
-    const leftEyeY = Math.max(-100, Math.min(100, gazeY + verticalDivergence));
-    const rightEyeY = Math.max(-100, Math.min(100, gazeY - verticalDivergence));
+    let leftEyeY = Math.max(-100, Math.min(100, gazeY + verticalDivergence));
+    let rightEyeY = Math.max(-100, Math.min(100, gazeY - verticalDivergence));
+
+    // Mirror mode: swap left/right eyes and negate X for viewer's perspective
+    // (visual left = physical right eye, visual right = physical left eye)
+    if (mirrorPreview) {
+        const tempX = leftEyeX;
+        leftEyeX = -rightEyeX;
+        rightEyeX = -tempX;
+        const tempY = leftEyeY;
+        leftEyeY = rightEyeY;
+        rightEyeY = tempY;
+    }
 
     // Update pupils
     // Map gaze (-100 to +100) to pupil offset within eyeball
@@ -3122,8 +3126,9 @@ function updateEyePreview(eye) {
     if (!blinkAnimationActive) {
         // Lid value: -100 = closed (scaleY=1), +100 = open (scaleY=0)
         // Map: lidValue -> (100 - lidValue) / 200 for scale (0 to 1)
-        const leftLid = eye.lidLeft || 0;
-        const rightLid = eye.lidRight || 0;
+        // In mirror mode, swap left/right lids to match swapped eye positions
+        const leftLid = mirrorPreview ? (eye.lidRight || 0) : (eye.lidLeft || 0);
+        const rightLid = mirrorPreview ? (eye.lidLeft || 0) : (eye.lidRight || 0);
 
         const leftLidScale = Math.max(0, Math.min(1, (100 - leftLid) / 200));
         const rightLidScale = Math.max(0, Math.min(1, (100 - rightLid) / 200));

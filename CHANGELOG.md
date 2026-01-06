@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Admin unlock via curl** - Web UI now updates immediately when PIN is unlocked via HTTP REST endpoint (previously required page reload)
 - **Make deploy error handling** - Now properly detects success when device reboots mid-response (curl exit codes 52/56), and correctly reports failure when admin lock is active
+- **Mirror preview vergence/coupling** - Z depth slider and coupling now work correctly in mirror mode (were inverted due to missing left/right eye swap)
 
 ### Documentation
 - **Setup guide rewrite** - Now covers both Arduino IDE and command-line (Docker) build methods
