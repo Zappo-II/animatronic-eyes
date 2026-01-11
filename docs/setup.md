@@ -265,7 +265,7 @@ make deploy-ui PIN=1234 # Upload UI with admin PIN
 
 ```
 ================================
-Animatronic Eyes v1.0.0
+Animatronic Eyes v1.1.0
 ================================
 Free heap: 289324 bytes
 [Storage] Initialized

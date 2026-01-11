@@ -68,7 +68,7 @@ To build from source, see the [Setup Guide](docs/setup.md).
 
 ## Current Version
 
-**v1.0.0** - Update Check: automatic GitHub version checking with configurable frequency, header indicator, and cache persistence.
+**v1.1.0** - Docker build system, Mirror Preview toggle, OTA deployment via Makefile.
 
 ## Roadmap
 

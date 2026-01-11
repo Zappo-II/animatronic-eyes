@@ -9,8 +9,8 @@
 #define CONFIG_H
 
 // Firmware version
-#define FIRMWARE_VERSION "1.0.0"
-#define MIN_UI_VERSION "1.0.0"  // Minimum UI version required by this firmware
+#define FIRMWARE_VERSION "1.1.0"
+#define MIN_UI_VERSION "1.1.0"  // Minimum UI version required by this firmware
 
 // Serial logging
 #define SERIAL_BAUD 115200
